@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Moving Dots</string>
+    <string name="intro">Animated dots at the screen edges move with the vehicle\'s acceleration, so what you see matches what your inner ear feels. Use it as a passenger — never while driving.</string>
+    <string name="grant_overlay">Allow display over other apps</string>
+    <string name="section_appearance">Appearance</string>
+    <string name="sensitivity">Sensitivity: %d dp per m/s²</string>
+    <string name="dot_size">Dot size: %d dp</string>
+    <string name="opacity">Opacity: %d%%</string>
+    <string name="dot_count">Dots per side: %d</string>
+    <string name="color_auto">Dark with outline (any background)</string>
+    <string name="color_white">White</string>
+    <string name="color_black">Black</string>
+    <string name="color_blue">Blue</string>
+    <string name="section_misc">How did you feel on this ride?</string>
+    <string name="misc_dots_on">Dots were on during this ride</string>
+    <string name="misc_save">Save rating</string>
+    <string name="misc_none">No ratings yet. Rate rides with and without dots to see what works for you.</string>
+    <string name="misc_summary">Average (MISC 0–10): with dots %1$s (n=%2$d) · without dots %3$s (n=%4$d)</string>
+    <string-array name="misc_levels">
+        <item>No problems</item>
+        <item>Slight discomfort, no specific symptoms</item>
+        <item>Vague dizziness, warmth, headache or stomach awareness</item>
+        <item>Some of those symptoms</item>
+        <item>Medium symptoms</item>
+        <item>Severe symptoms</item>
+        <item>Some nausea</item>
+        <item>Medium nausea</item>
+        <item>Severe nausea</item>
+        <item>Retching</item>
+        <item>Vomiting</item>
+    </string-array>
+    <string name="channel_name">Motion cues</string>
+    <string name="notif_running">Motion cues on</string>
+    <string name="notif_auto">Motion cues on — vehicle detected</string>
+    <string name="notif_paused">Motion cues paused</string>
+    <string name="notif_snoozed">Motion cues snoozed for this trip</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="tile_label">Motion cues</string>
+    <string name="fgs_subtype" translatable="false">Motion-sickness visual cue overlay driven by motion sensors</string>
+    <string name="overlay_hint">Moving Dots needs permission to draw the dots on top of other apps.</string>
+    <string name="preview_caption">Preview — gently accelerating and braking</string>
+    <string name="dot_color">Dot color</string>
+    <string name="mode_off">Off</string>
+    <string name="mode_on">On</string>
+    <string name="mode_auto">Automatic</string>
+    <string name="state_hidden">Dots hidden</string>
+    <string name="state_showing">Dots showing</string>
+    <string name="state_waiting">Waiting for a vehicle</string>
+    <string name="state_paused">Paused</string>
+    <string name="state_snoozed">Hidden for this trip</string>
+    <string name="mode_off_desc">No dots and no vehicle detection.</string>
+    <string name="mode_on_desc">The dots stay on until you turn them off — here, in the notification or in the Quick Settings tile.</string>
+    <string name="mode_auto_desc">The dots appear within a couple of minutes of riding in a car or bus and hide a few minutes after you leave. Driving? Hide them for the trip from the notification. Detection runs in Google Play services and uses little battery.</string>
+    <string name="action_turn_off">Turn off</string>
+    <string name="action_hide_trip">Hide for this trip</string>
+    <string name="action_show_again">Show again</string>
+    <string name="top_bottom_dots">Also show dots at the top and bottom</string>
+    <string name="history">History</string>
+    <string name="history_show_all">Show all (%d)</string>
+    <string name="history_show_less">Show less</string>
+    <string name="history_clear">Clear history</string>
+    <string name="history_clear_title">Clear all ratings?</string>
+    <plurals name="history_clear_message">
+        <item quantity="one">This deletes %d rating and can\'t be undone.</item>
+        <item quantity="other">This deletes %d ratings and can\'t be undone.</item>
+    </plurals>
+    <string name="history_clear_confirm">Clear</string>
+    <string name="with_dots">with dots</string>
+    <string name="without_dots">without dots</string>
+    <string name="history_meta" translatable="false">%1$s · %2$s</string>
+    <string name="detection_title">Automatic detection</string>
+    <string name="detection_empty">No detection events yet.</string>
+    <string name="detection_copy">Copy log</string>
+    <string name="detection_clear">Clear log</string>
+    <string name="detection_copied">Log copied</string>
+    <string name="test_trigger" translatable="false">Test trigger (debug build only)</string>
+    <string name="test_vehicle" translatable="false">Vehicle</string>
+    <string name="test_walking" translatable="false">Walking</string>
+</resources>

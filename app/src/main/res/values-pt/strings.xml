@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="intro">Pontos animados nas bordas da tela se movem com a aceleração do veículo, para que o que você vê combine com o que seu ouvido interno sente. Use como passageiro — nunca dirigindo.</string>
+    <string name="grant_overlay">Permitir sobreposição a outros apps</string>
+    <string name="section_appearance">Aparência</string>
+    <string name="sensitivity">Sensibilidade: %d dp por m/s²</string>
+    <string name="dot_size">Tamanho do ponto: %d dp</string>
+    <string name="opacity">Opacidade: %d%%</string>
+    <string name="dot_count">Pontos por lado: %d</string>
+    <string name="color_auto">Escuro com contorno (qualquer fundo)</string>
+    <string name="color_white">Branco</string>
+    <string name="color_black">Preto</string>
+    <string name="color_blue">Azul</string>
+    <string name="section_misc">Como você se sentiu nesta viagem?</string>
+    <string name="misc_dots_on">Os pontos estavam ligados nesta viagem</string>
+    <string name="misc_save">Salvar avaliação</string>
+    <string name="misc_none">Nenhuma avaliação ainda. Avalie viagens com e sem pontos para ver o que funciona para você.</string>
+    <string name="misc_summary">Média (MISC 0–10): com pontos %1$s (n=%2$d) · sem pontos %3$s (n=%4$d)</string>
+    <string-array name="misc_levels">
+        <item>Nenhum problema</item>
+        <item>Leve desconforto, sem sintomas específicos</item>
+        <item>Tontura vaga, calor, dor de cabeça ou desconforto no estômago</item>
+        <item>Alguns desses sintomas</item>
+        <item>Sintomas médios</item>
+        <item>Sintomas fortes</item>
+        <item>Alguma náusea</item>
+        <item>Náusea média</item>
+        <item>Náusea forte</item>
+        <item>Ânsia de vômito</item>
+        <item>Vômito</item>
+    </string-array>
+    <string name="channel_name">Pistas de movimento</string>
+    <string name="notif_running">Pistas de movimento ligadas</string>
+    <string name="notif_auto">Pistas ligadas — veículo detectado</string>
+    <string name="notif_paused">Pistas de movimento pausadas</string>
+    <string name="notif_snoozed">Pistas desativadas nesta viagem</string>
+    <string name="action_pause">Pausar</string>
+    <string name="action_resume">Retomar</string>
+    <string name="tile_label">Pistas de movimento</string>
+    <string name="overlay_hint">O Moving Dots precisa de permissão para desenhar os pontos sobre outros apps.</string>
+    <string name="preview_caption">Prévia — acelerando e freando suavemente</string>
+    <string name="dot_color">Cor dos pontos</string>
+    <string name="mode_off">Desligado</string>
+    <string name="mode_on">Ligado</string>
+    <string name="mode_auto">Automático</string>
+    <string name="state_hidden">Pontos ocultos</string>
+    <string name="state_showing">Pontos visíveis</string>
+    <string name="state_waiting">Aguardando um veículo</string>
+    <string name="state_paused">Pausado</string>
+    <string name="state_snoozed">Ocultos nesta viagem</string>
+    <string name="mode_off_desc">Sem pontos e sem detecção de veículo.</string>
+    <string name="mode_on_desc">Os pontos ficam ligados até você desligar — aqui, na notificação ou no bloco de Configurações rápidas.</string>
+    <string name="mode_auto_desc">Os pontos aparecem em até uns dois minutos andando de carro ou ônibus e somem alguns minutos depois que você sai. Dirigindo? Oculte-os nesta viagem pela notificação. A detecção roda no Google Play services e gasta pouca bateria.</string>
+    <string name="action_turn_off">Desligar</string>
+    <string name="action_hide_trip">Ocultar nesta viagem</string>
+    <string name="action_show_again">Mostrar de novo</string>
+    <string name="top_bottom_dots">Mostrar pontos também em cima e embaixo</string>
+    <string name="history">Histórico</string>
+    <string name="history_show_all">Ver todas (%d)</string>
+    <string name="history_show_less">Mostrar menos</string>
+    <string name="history_clear">Limpar histórico</string>
+    <string name="history_clear_title">Limpar todas as avaliações?</string>
+    <plurals name="history_clear_message">
+        <item quantity="one">Isso apaga %d avaliação e não pode ser desfeito.</item>
+        <item quantity="many">Isso apaga %d de avaliações e não pode ser desfeito.</item>
+        <item quantity="other">Isso apaga %d avaliações e não pode ser desfeito.</item>
+    </plurals>
+    <string name="history_clear_confirm">Limpar</string>
+    <string name="with_dots">com pontos</string>
+    <string name="without_dots">sem pontos</string>
+    <string name="detection_title">Detecção automática</string>
+    <string name="detection_empty">Nenhum evento de detecção ainda.</string>
+    <string name="detection_copy">Copiar log</string>
+    <string name="detection_clear">Limpar log</string>
+    <string name="detection_copied">Log copiado</string>
+</resources>
