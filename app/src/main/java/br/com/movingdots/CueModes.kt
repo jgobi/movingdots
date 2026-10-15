@@ -4,8 +4,6 @@ import android.app.ForegroundServiceStartNotAllowedException
 import android.content.Context
 import android.provider.Settings
 import android.util.Log
-import br.com.movingdots.auto.DetectionLog
-import br.com.movingdots.auto.TransitionRegistrar
 
 /**
  * The single source of truth for what the app is doing:
@@ -28,14 +26,7 @@ object CueModes {
             DetectionLog(context).add("Mode -> ${arrayOf("Off", "On", "Automatic")[mode]}")
         }
         prefs.mode = mode
-        if (mode == AUTO) {
-            TransitionRegistrar.register(context)
-            // Sample fast for the first minutes, so enabling Automatic inside a vehicle reacts quickly.
-            TransitionRegistrar.boostSampling(context)
-        } else {
-            TransitionRegistrar.unregister(context)
-            TransitionRegistrar.syncSampling(context)
-        }
+        AutoDetection.onModeChanged(context, mode)
         when (mode) {
             OFF -> MotionCueService.stop(context)
             ON -> try {

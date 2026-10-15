@@ -1,18 +1,14 @@
-package br.com.movingdots.auto
+package br.com.movingdots
 
 import android.app.ForegroundServiceStartNotAllowedException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import br.com.movingdots.CueModes
-import br.com.movingdots.MotionCueService
-import br.com.movingdots.Prefs
 
 /**
  * Restores the current mode after a reboot or app update. Automatic mode's subscriptions are
- * already repaired by MovingDotsApp.onCreate, which runs first in the same process; after an
- * update the transition registration is renewed anyway, as cheap insurance.
+ * already repaired by MovingDotsApp.onCreate, which runs first in the same process.
  */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -24,7 +20,7 @@ class BootReceiver : BroadcastReceiver() {
             return
         }
         when (prefs.mode) {
-            CueModes.AUTO -> if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) TransitionRegistrar.register(context)
+            CueModes.AUTO -> if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) AutoDetection.onAppUpdated(context)
             CueModes.ON -> try {
                 MotionCueService.start(context)
             } catch (e: ForegroundServiceStartNotAllowedException) {

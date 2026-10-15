@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "full" build only: Automatic mode, backed by Google Play services activity recognition. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
+    <application>
+        <receiver
+            android:name=".auto.VehicleTransitionReceiver"
+            android:exported="false" />
+    </application>
+</manifest>

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
 import br.com.movingdots.CueModes
+import br.com.movingdots.DetectionLog
 import br.com.movingdots.MotionCueService
 import br.com.movingdots.Prefs
 import com.google.android.gms.common.ConnectionResult

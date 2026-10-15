@@ -28,8 +28,6 @@ import android.widget.RadioGroup
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
-import br.com.movingdots.auto.DetectionLog
-import br.com.movingdots.auto.TransitionRegistrar
 import java.io.File
 import java.text.DateFormat
 import java.util.Date
@@ -84,7 +82,7 @@ class MainActivity : Activity() {
         status = findViewById(R.id.status)
         modeDesc = findViewById(R.id.mode_desc)
         modeGroup = findViewById(R.id.mode)
-        if (!TransitionRegistrar.isAvailable(this)) findViewById<View>(R.id.mode_auto).visibility = View.GONE
+        if (!AutoDetection.isSupported(this)) findViewById<View>(R.id.mode_auto).visibility = View.GONE
         modeGroup.setOnCheckedChangeListener { _, id ->
             if (!updatingUi) onModeSelected(modeIds.indexOf(id))
         }
@@ -126,7 +124,7 @@ class MainActivity : Activity() {
         if (!canOverlay && prefs.mode != CueModes.OFF) CueModes.set(this, CueModes.OFF)
         if (canOverlay && prefs.mode == CueModes.ON && !MotionCueService.isRunning) CueModes.set(this, CueModes.ON)
         // Automatic mode can't work (and its option is hidden) without Play services.
-        if (prefs.mode == CueModes.AUTO && !TransitionRegistrar.isAvailable(this)) CueModes.set(this, CueModes.OFF)
+        if (prefs.mode == CueModes.AUTO && !AutoDetection.isSupported(this)) CueModes.set(this, CueModes.OFF)
         refreshMode()
     }
 
@@ -160,7 +158,7 @@ class MainActivity : Activity() {
     private fun onModeSelected(mode: Int) {
         if (mode == prefs.mode) return
         val missing = ArrayList<String>()
-        if (mode == CueModes.AUTO && !TransitionRegistrar.hasPermission(this)) {
+        if (mode == CueModes.AUTO && !AutoDetection.hasPermission(this)) {
             missing += Manifest.permission.ACTIVITY_RECOGNITION
         }
         if (mode != CueModes.OFF && Build.VERSION.SDK_INT >= 33 &&
@@ -207,7 +205,7 @@ class MainActivity : Activity() {
             },
         )
         findViewById<View>(R.id.detection_card).visibility =
-            if (mode == CueModes.AUTO || BuildConfig.DEBUG) View.VISIBLE else View.GONE
+            if ((mode == CueModes.AUTO || BuildConfig.DEBUG) && AutoDetection.isSupported(this)) View.VISIBLE else View.GONE
         refreshDetectionLog()
         val running = MotionCueService.isRunning
         status.setText(
@@ -251,7 +249,7 @@ class MainActivity : Activity() {
 
     /** Diagnostics for automatic mode: detection log (copyable) and, in debug builds, the test trigger. */
     private fun setupDetection() {
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG && AutoDetection.isSupported(this)) {
             findViewById<View>(R.id.test_trigger_section).visibility = View.VISIBLE
             val group = findViewById<RadioGroup>(R.id.test_trigger)
             group.check(if (prefs.testWalking) R.id.test_walking else R.id.test_vehicle)
@@ -269,7 +267,7 @@ class MainActivity : Activity() {
             val header = "Moving Dots ${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_TYPE}) · " +
                 "${Build.MANUFACTURER} ${Build.MODEL} · Android ${Build.VERSION.RELEASE}\n" +
                 "Mode=${arrayOf("Off", "On", "Automatic")[prefs.mode.coerceIn(0, 2)]} " +
-                "trigger=${TransitionRegistrar.name(TransitionRegistrar.target(this))} " +
+                "trigger=${AutoDetection.targetName(this)} " +
                 "gen=${prefs.transitionGeneration} running=${MotionCueService.isRunning}\n"
             val text = header + detectionLog.lines().reversed().joinToString("\n")
             getSystemService(ClipboardManager::class.java)

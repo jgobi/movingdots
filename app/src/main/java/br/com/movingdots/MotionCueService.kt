@@ -29,9 +29,6 @@ import android.service.quicksettings.TileService
 import android.util.Log
 import android.view.Display
 import android.view.WindowManager
-import br.com.movingdots.auto.DetectionLog
-import br.com.movingdots.auto.OverlayBootstrap
-import br.com.movingdots.auto.TransitionRegistrar
 
 /**
  * Foreground service that shows the motion-cue overlay and feeds it from the sensors.
@@ -74,10 +71,10 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
             if (SystemClock.elapsedRealtime() - lastVehicleSeenMs >= NO_VEHICLE_MS) {
                 prefs.sampledExitMillis = System.currentTimeMillis()
                 DetectionLog(this@MotionCueService).add(
-                    "No confident ${TransitionRegistrar.name(TransitionRegistrar.target(this@MotionCueService))} " +
+                    "No confident ${AutoDetection.targetName(this@MotionCueService)} " +
                         "sample for ${NO_VEHICLE_MS / 60_000} min -> ending session, fresh registration",
                 )
-                TransitionRegistrar.register(this@MotionCueService)
+                AutoDetection.onVehicleLeft(this@MotionCueService)
                 stopSelf()
                 return
             }
@@ -279,7 +276,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
             }
         }
         // Always, since the session flags may have changed even when watching didn't.
-        TransitionRegistrar.syncSampling(this)
+        AutoDetection.onSessionChanged(this)
     }
 
     private val hidden get() = paused || snoozed

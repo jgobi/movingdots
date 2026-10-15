@@ -8,7 +8,6 @@ import android.provider.Settings
 import android.service.quicksettings.Tile
 import android.graphics.drawable.Icon
 import android.service.quicksettings.TileService
-import br.com.movingdots.auto.TransitionRegistrar
 
 /** Quick Settings tile: switches between Off and the last active mode (On or Automatic). */
 class CueTileService : TileService() {
@@ -22,7 +21,7 @@ class CueTileService : TileService() {
         } else {
             val target = prefs.lastActiveMode
             val ready = Settings.canDrawOverlays(this) &&
-                (target != CueModes.AUTO || TransitionRegistrar.hasPermission(this))
+                (target != CueModes.AUTO || AutoDetection.hasPermission(this))
             // Permissions are granted in the app; a refused background start also falls back to it.
             if (!ready || !CueModes.set(this, target)) {
                 openApp()

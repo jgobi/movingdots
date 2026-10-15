@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Teal instead of the full build's blue, to tell the FOSS build apart on the home screen. -->
+    <color name="icon_bg">#FF0D9488</color>
+</resources>

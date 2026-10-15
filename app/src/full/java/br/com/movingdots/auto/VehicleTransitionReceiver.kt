@@ -9,7 +9,9 @@ import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
 import br.com.movingdots.CueModes
+import br.com.movingdots.DetectionLog
 import br.com.movingdots.MotionCueService
+import br.com.movingdots.OverlayBootstrap
 import br.com.movingdots.Prefs
 import com.google.android.gms.location.ActivityRecognitionResult
 import com.google.android.gms.location.ActivityTransition

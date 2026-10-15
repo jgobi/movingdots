@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
-        <!-- Debug builds only: simulate vehicle transitions by broadcasting to this receiver
+        <!-- "full" debug builds only: simulate vehicle transitions by broadcasting to this receiver
              with a boolean extra "enter" (true = ENTER, false = EXIT). See README. -->
         <receiver
             android:name=".auto.DebugTransitionReceiver"

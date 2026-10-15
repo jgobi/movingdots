@@ -16,6 +16,22 @@ android {
         resourceConfigurations += listOf("en", "pt")
     }
 
+    // "full": sideloaded release with Automatic mode (Google Play services).
+    // "foss": F-Droid build without any Google dependency and without Automatic mode. Its own
+    // application id and icon color let both be installed side by side for testing.
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("full") {
+            dimension = "distribution"
+            isDefault = true
+        }
+        create("foss") {
+            dimension = "distribution"
+            applicationIdSuffix = ".foss"
+            versionNameSuffix = "-foss"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -49,6 +65,6 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.gms:play-services-location:21.3.0")
+    "fullImplementation"("com.google.android.gms:play-services-location:21.3.0")
     testImplementation("junit:junit:4.13.2")
 }

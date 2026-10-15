@@ -1,4 +1,4 @@
-package br.com.movingdots.auto
+package br.com.movingdots
 
 import android.content.Context
 import android.graphics.PixelFormat
