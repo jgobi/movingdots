@@ -26,8 +26,10 @@ Common code only talks to `AutoDetection`, which exists once per flavor with the
 - `DotsOverlayView` draws the dots once; motion is applied with `translationX/Y` only.
 - `MotionCueService` is a foreground service; sensors run only while the screen is on.
 - Automatic mode (`full` only) samples Play services' activity classifier (every 2 min while
-  waiting, every 30 s in a session) and starts the cues on confident `IN_VEHICLE` samples; the
-  Activity Transition API's enter/exit events are used as a shortcut when they arrive.
+  waiting, every 30 s in a session). It starts the cues on one `IN_VEHICLE` sample ≥75% or two
+  ≥50%, and ends them after 3 min without one (`ON_BICYCLE` ≥50% also keeps a session going, since
+  slow, bumpy traffic gets classified that way). An Activity Transition API ENTER starts a session
+  early when it arrives; its EXIT is only logged.
 
 ## Build
 
@@ -57,15 +59,14 @@ adb logcat -s MotionCue MotionCueAuto              # fwd/lat acceleration (debug
 
 For the `foss` build, use the package `br.com.movingdots.foss`.
 
-Simulate vehicle transitions (`full` debug build only):
+Simulate a vehicle ENTER (`full` debug build only):
 
 ```sh
-adb shell am broadcast -n br.com.movingdots/.auto.DebugTransitionReceiver --ez enter true
-adb shell am broadcast -n br.com.movingdots/.auto.DebugTransitionReceiver --ez enter false
+adb shell am broadcast -n br.com.movingdots/.auto.DebugTransitionReceiver
 ```
 
-On Android 15+ a broadcast from adb is not exempt from background foreground-service limits, so
-ENTER may only start the cues while the app is in the foreground; real transition events are exempt.
+On Android 15+ a broadcast from adb is not exempt from background foreground-service limits, so it
+may only start the cues while the app is in the foreground; real transition events are exempt.
 
 ## License
 

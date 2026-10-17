@@ -57,34 +57,48 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
     private var snoozed = false
 
     private val handler = Handler(Looper.getMainLooper())
-    private val stopAfterExit = Runnable { stopSelf() }
     private var watchingVehicle = false
+    private var ending = false
+
+    /** Periodic check while the CPU is awake; samples and screen-on also check (see [vehicleGone]). */
+    private val vehicleCheck = object : Runnable {
+        override fun run() {
+            if (!vehicleGone()) handler.postDelayed(this, VEHICLE_CHECK_MS)
+        }
+    }
 
     /**
      * Ends an automatic session once no confident vehicle sample has arrived for a while, whether
      * samples said otherwise or stopped arriving (Play services may pause them while the phone is
-     * still). Also starts a fresh transition registration, so Play services' stuck "in vehicle"
+     * still). Measured with elapsedRealtime, which keeps counting while the CPU sleeps: Handler
+     * delays don't, so with the screen off in a pocket the periodic check alone once ran 33 min
+     * late. Also starts a fresh transition registration, so Play services' stuck "in vehicle"
      * state can't swallow the next ride's ENTER.
+     *
+     * @return true if the session is ending.
      */
-    private val vehicleCheck = object : Runnable {
-        override fun run() {
-            if (SystemClock.elapsedRealtime() - lastVehicleSeenMs >= NO_VEHICLE_MS) {
-                prefs.sampledExitMillis = System.currentTimeMillis()
-                DetectionLog(this@MotionCueService).add(
-                    "No confident ${AutoDetection.targetName(this@MotionCueService)} " +
-                        "sample for ${NO_VEHICLE_MS / 60_000} min -> ending session, fresh registration",
-                )
-                AutoDetection.onVehicleLeft(this@MotionCueService)
-                stopSelf()
-                return
-            }
-            handler.postDelayed(this, VEHICLE_CHECK_MS)
-        }
+    private fun vehicleGone(): Boolean {
+        if (ending) return true
+        if (!watchingVehicle || SystemClock.elapsedRealtime() - lastVehicleSeenMs < NO_VEHICLE_MS) return false
+        ending = true
+        prefs.sampledExitMillis = System.currentTimeMillis()
+        DetectionLog(this).add(
+            "No confident ${AutoDetection.targetName(this)} sample for ${NO_VEHICLE_MS / 60_000} min " +
+                "-> ending session, fresh registration",
+        )
+        AutoDetection.onVehicleLeft(this)
+        // Never show stale dots while the service winds down.
+        overlay?.visibility = android.view.View.INVISIBLE
+        setSensors(false)
+        stopSelf()
+        return true
     }
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             screenOn = intent.action == Intent.ACTION_SCREEN_ON
+            // A session that expired while the phone slept ends now, before any dot is shown.
+            if (screenOn && vehicleGone()) return
             updateSensors()
         }
     }
@@ -132,16 +146,11 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
             ACTION_PAUSE -> { paused = !paused; applyVisibility() }
             ACTION_SNOOZE -> { snoozed = true; applyVisibility() }
             ACTION_UNSNOOZE -> { snoozed = false; applyVisibility() }
-            // Only automatic sessions end with the trip; a grace period absorbs short walks.
-            ACTION_VEHICLE_EXIT -> if (autoStarted) {
-                DetectionLog(this).add("Exit: ending session in ${EXIT_GRACE_MS / 1000}s unless re-entered")
-                handler.postDelayed(stopAfterExit, EXIT_GRACE_MS)
-            }
             else -> {
                 // A null intent is a sticky restart of a manual session.
                 val auto = intent?.getBooleanExtra(EXTRA_AUTO, false) ?: false
-                if (handler.hasCallbacks(stopAfterExit)) DetectionLog(this).add("Exit grace canceled: re-entered")
-                handler.removeCallbacks(stopAfterExit)
+                // A vehicle ENTER while an automatic session runs is fresh vehicle evidence.
+                if (auto && isRunning && !ending) lastVehicleSeenMs = SystemClock.elapsedRealtime()
                 try {
                     startInForeground(auto)
                 } catch (e: ForegroundServiceStartNotAllowedException) {
@@ -229,8 +238,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
     }
 
     override fun onDestroy() {
-        handler.removeCallbacks(stopAfterExit)
-        vehicleSampleListener = null
+        sampleListener = null
         if (isRunning && autoStarted) {
             DetectionLog(this).add("Session ended")
             // A confident sample from before or during this session must not pair with one after it.
@@ -262,16 +270,12 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
             if (on) {
                 // The session started from vehicle evidence: count it as the latest.
                 lastVehicleSeenMs = SystemClock.elapsedRealtime()
-                // A confident vehicle sample cancels a pending EXIT grace (a spurious EXIT at a long stop).
-                vehicleSampleListener = {
-                    if (handler.hasCallbacks(stopAfterExit)) {
-                        handler.removeCallbacks(stopAfterExit)
-                        DetectionLog(this).add("Exit grace canceled: vehicle sample")
-                    }
-                }
+                // Every sample also checks the timeout: it may be the first thing to run after the
+                // CPU slept through the periodic check.
+                sampleListener = { vehicleGone() }
                 handler.postDelayed(vehicleCheck, VEHICLE_CHECK_MS)
             } else {
-                vehicleSampleListener = null
+                sampleListener = null
                 handler.removeCallbacks(vehicleCheck)
             }
         }
@@ -290,7 +294,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         onStateChanged?.invoke()
     }
 
-    private fun updateSensors() = setSensors(isRunning && screenOn && !hidden)
+    private fun updateSensors() = setSensors(isRunning && screenOn && !hidden && !ending)
 
     private fun setSensors(on: Boolean) {
         if (on == sensorsOn) return
@@ -415,12 +419,10 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         const val ACTION_PAUSE = "br.com.movingdots.PAUSE"
         const val ACTION_SNOOZE = "br.com.movingdots.SNOOZE"
         const val ACTION_UNSNOOZE = "br.com.movingdots.UNSNOOZE"
-        const val ACTION_VEHICLE_EXIT = "br.com.movingdots.VEHICLE_EXIT"
         const val EXTRA_AUTO = "auto"
         private const val CHANNEL_ID = "cues"
         private const val NOTIFICATION_ID = 1
         private const val SAMPLING_US = 20_000 // 50 Hz
-        private const val EXIT_GRACE_MS = 60_000L
         private const val NO_VEHICLE_MS = 3 * 60_000L
         private const val VEHICLE_CHECK_MS = 30_000L
 
@@ -432,13 +434,13 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         var isAutoSession = false
             private set
 
-        /** Set by a running automatic session; called on the main thread for confident samples. */
-        private var vehicleSampleListener: (() -> Unit)? = null
+        /** Set by a running automatic session; called on the main thread for every sample. */
+        private var sampleListener: (() -> Unit)? = null
 
-        fun onActivitySample(inVehicle: Boolean) {
-            if (!inVehicle) return
-            lastVehicleSeenMs = SystemClock.elapsedRealtime()
-            vehicleSampleListener?.invoke()
+        /** @param keepsSession the sample is evidence that the ride goes on. */
+        fun onActivitySample(keepsSession: Boolean) {
+            if (keepsSession) lastVehicleSeenMs = SystemClock.elapsedRealtime()
+            sampleListener?.invoke()
         }
         private const val MAX_TOUCH_PASSTHROUGH_ALPHA = 0.8f
 

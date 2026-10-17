@@ -80,9 +80,11 @@ class VehicleTransitionReceiver : BroadcastReceiver() {
             }
         }
         when (decision) {
-            Decision.ENTER -> handle(context, enter = true)
+            Decision.ENTER -> startSession(context)
             Decision.CHECK -> if (!MotionCueService.isRunning) TransitionRegistrar.boostSampling(context)
-            Decision.EXIT -> handle(context, enter = false)
+            // Logged only: on a real ride Play services sent an EXIT 2 min before arrival while the
+            // classifier saw ON_BICYCLE in slow, bumpy traffic. Samples decide when a session ends.
+            Decision.EXIT -> log.add("EXIT noted; the session ends when samples stop showing a vehicle")
             null -> Unit
         }
     }
@@ -100,11 +102,20 @@ class VehicleTransitionReceiver : BroadcastReceiver() {
             confidence = maxOf(confidence, result.getActivityConfidence(DetectedActivity.ON_FOOT))
         }
         val inTarget = confidence >= TARGET_CONFIDENCE
+        // A vehicle in slow, bumpy traffic was classified ON_BICYCLE (80-92%) for minutes before
+        // arrival: that keeps a running session alive, but never starts one.
+        val bicycle = target == DetectedActivity.IN_VEHICLE &&
+            result.getActivityConfidence(DetectedActivity.ON_BICYCLE) >= TARGET_CONFIDENCE
         val all = result.probableActivities.joinToString(" ") { "${TransitionRegistrar.name(it.type)}=${it.confidence}" }
+        val name = TransitionRegistrar.name(target)
         DetectionLog(context).add(
-            "Sample: $all -> ${if (inTarget) "in" else "no confident"} ${TransitionRegistrar.name(target)}",
+            "Sample: $all -> " + when {
+                inTarget -> "in $name"
+                bicycle -> "ON_BICYCLE (keeps a running session)"
+                else -> "no confident $name"
+            },
         )
-        MotionCueService.onActivitySample(inTarget)
+        MotionCueService.onActivitySample(keepsSession = inTarget || bicycle)
         detectFromSamples(context, confidence, inTarget, result.mostProbableActivity, target)
         // Ends an expired sampling boost; a no-op when the rate is already right.
         TransitionRegistrar.syncSampling(context)
@@ -122,11 +133,11 @@ class VehicleTransitionReceiver : BroadcastReceiver() {
         when {
             confidence >= STRONG_CONFIDENCE -> {
                 DetectionLog(context).add("Strong $name sample -> starting session")
-                handle(context, enter = true)
+                startSession(context)
             }
             inTarget && now - prefs.confidentSampleMillis <= CONFIDENT_PAIR_MS -> {
                 DetectionLog(context).add("Second confident $name sample -> starting session")
-                handle(context, enter = true)
+                startSession(context)
             }
             inTarget -> prefs.confidentSampleMillis = now
             isOtherActivity(top, target) -> prefs.confidentSampleMillis = 0L
@@ -148,41 +159,34 @@ class VehicleTransitionReceiver : BroadcastReceiver() {
         private const val RECEIVER_HOLD_MS = 2_000L
         private const val BOOTSTRAP_RETRY_MS = 700L
 
-        fun handle(context: Context, enter: Boolean) {
+        /** Starts (or keeps) an automatic session. */
+        fun startSession(context: Context) {
             if (Prefs(context).mode != CueModes.AUTO) return
             val log = DetectionLog(context)
-            if (enter) {
-                if (!Settings.canDrawOverlays(context)) {
-                    log.add("Cannot start cues: overlay permission missing")
-                    return
-                }
-                val wasRunning = MotionCueService.isRunning
-                try {
-                    // Activity-transition events are exempt from background FGS start limits.
-                    MotionCueService.start(context, auto = true)
-                    log.add(if (wasRunning) "Session already running: kept" else "Starting session")
-                } catch (e: ForegroundServiceStartNotAllowedException) {
-                    // Android 15+: allowed once the app shows an overlay window. Show an invisible one,
-                    // give the system a moment to see it, and retry.
-                    log.add("Background start refused; retrying with an overlay window")
-                    if (!OverlayBootstrap.show(context)) return
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        try {
-                            MotionCueService.start(context, auto = true)
-                            log.add("Starting session (via overlay window)")
-                        } catch (e2: ForegroundServiceStartNotAllowedException) {
-                            log.add("Cannot start cues: background start refused even with overlay ($e2)")
-                        }
-                        // Safety net in case the service never comes up to remove it.
-                        Handler(Looper.getMainLooper()).postDelayed({ OverlayBootstrap.hide() }, 10_000L)
-                    }, BOOTSTRAP_RETRY_MS)
-                }
-            } else if (!MotionCueService.isRunning) {
-                log.add("Exit with no session running: nothing to do")
-            } else {
-                context.startService(
-                    Intent(context, MotionCueService::class.java).setAction(MotionCueService.ACTION_VEHICLE_EXIT),
-                )
+            if (!Settings.canDrawOverlays(context)) {
+                log.add("Cannot start cues: overlay permission missing")
+                return
+            }
+            val wasRunning = MotionCueService.isRunning
+            try {
+                // Activity-transition events are exempt from background FGS start limits.
+                MotionCueService.start(context, auto = true)
+                log.add(if (wasRunning) "Session already running: kept" else "Starting session")
+            } catch (e: ForegroundServiceStartNotAllowedException) {
+                // Android 15+: allowed once the app shows an overlay window. Show an invisible one,
+                // give the system a moment to see it, and retry.
+                log.add("Background start refused; retrying with an overlay window")
+                if (!OverlayBootstrap.show(context)) return
+                Handler(Looper.getMainLooper()).postDelayed({
+                    try {
+                        MotionCueService.start(context, auto = true)
+                        log.add("Starting session (via overlay window)")
+                    } catch (e2: ForegroundServiceStartNotAllowedException) {
+                        log.add("Cannot start cues: background start refused even with overlay ($e2)")
+                    }
+                    // Safety net in case the service never comes up to remove it.
+                    Handler(Looper.getMainLooper()).postDelayed({ OverlayBootstrap.hide() }, 10_000L)
+                }, BOOTSTRAP_RETRY_MS)
             }
         }
     }
