@@ -27,8 +27,9 @@ Common code only talks to `AutoDetection`, which exists once per flavor with the
 - `MotionCueService` is a foreground service; sensors run only while the screen is on.
 - The dots are always turned on by hand (app or Quick Settings tile). With "turn off when I leave
   the vehicle" (`full` only), Play services' activity classifier is sampled every 30 s while they
-  are on, and `TripEndDetector` turns them off once a vehicle was seen and the user then walks
-  (or after 15 min without vehicle evidence). Starting automatically was dropped: on the test
+  are on (and re-requested when the screen turns on, which brings a fresh sample within ~2 s).
+  `TripEndDetector` turns them off once a vehicle was seen and the user then walks, or after
+  15 min and 10 samples without vehicle evidence; with no samples it decides nothing. Starting automatically was dropped: on the test
   device Play services withheld its events from the app while it was in the background.
 - The notification is optional: Android requires one for the foreground service, but without the
   notification permission (or with its channel turned off) the dots run silently.

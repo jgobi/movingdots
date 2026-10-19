@@ -78,10 +78,31 @@ class TripEndDetectorTest {
     fun gettingOffAndSittingStillEndsAfterTheTimeout() {
         val d = TripEndDetector(noVehicleTimeoutMs = 15 * 60_000L)
         run(d, Sample(0, vehicle = 97))
-        assertEquals(Result.NONE, d.check(14 * 60_000L))
-        assertEquals(Result.ENDED_TIMEOUT, d.check(15 * 60_000L))
-        // Also reported by a STILL sample arriving after the timeout.
-        assertEquals(Result.ENDED_TIMEOUT, d.onSample(vehicle = 0, bicycle = 0, onFoot = 0, nowMs = 16 * 60_000L))
+        // STILL samples every 30 s (screen on): 15 min after the last vehicle sample, it ends.
+        var t = 30
+        while (t < 15 * 60) {
+            assertEquals(Result.NONE, d.onSample(vehicle = 0, bicycle = 0, onFoot = 0, nowMs = t * 1000L))
+            t += 30
+        }
+        assertEquals(Result.ENDED_TIMEOUT, d.onSample(vehicle = 0, bicycle = 0, onFoot = 0, nowMs = t * 1000L))
+    }
+
+    @Test
+    fun aStillSampleAfterALongSilenceDoesNotEndIt() {
+        // Screen off mid-ride: no samples for 20 min, then the phone is picked up at a red light.
+        val d = TripEndDetector()
+        run(d, Sample(0, vehicle = 96))
+        assertEquals(Result.NONE, d.onSample(vehicle = 1, bicycle = 0, onFoot = 2, nowMs = 20 * 60_000L))
+        assertEquals(Result.NONE, d.onSample(vehicle = 0, bicycle = 0, onFoot = 1, nowMs = 20 * 60_000L + 30_000))
+    }
+
+    @Test
+    fun silenceDuringTheRideDoesNotEndIt() {
+        // 10-19: samples stopped at 08:32:31 with the screen off, in the car until 09:00. Picking the
+        // phone up at 08:50 brings a fresh sample, still in the vehicle: the session must go on.
+        val d = TripEndDetector()
+        run(d, Sample(0, vehicle = 89), Sample(355, vehicle = 96))
+        assertEquals(Result.NONE, d.onSample(vehicle = 95, bicycle = 0, onFoot = 0, nowMs = (355 + 18 * 60) * 1000L))
     }
 
     @Test
@@ -91,7 +112,7 @@ class TripEndDetectorTest {
         val r = run(d, Sample(0, vehicle = 42), Sample(30, onFoot = 95), Sample(3600, vehicle = 29))
         assertEquals(null, firstEnd(r))
         assertFalse(d.armed)
-        assertEquals(Result.NONE, d.check(10 * 3600_000L))
+        assertEquals(Result.NONE, d.onSample(vehicle = 0, bicycle = 0, onFoot = 0, nowMs = 10 * 3600_000L))
     }
 
     @Test

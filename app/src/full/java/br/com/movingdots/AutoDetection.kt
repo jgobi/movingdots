@@ -20,7 +20,10 @@ object AutoDetection {
     fun isEnabled(context: Context) =
         Prefs(context).autoStop && isSupported(context) && hasPermission(context)
 
-    /** A session started (or the option was enabled during one): sample until it ends. */
+    /**
+     * A session started (or the option was enabled during one): sample until it ends. Calling it
+     * again re-requests, which makes Play services deliver a fresh sample right away.
+     */
     fun startWatching(context: Context) = ActivitySampler.start(context)
 
     fun stopWatching(context: Context) = ActivitySampler.stop(context)

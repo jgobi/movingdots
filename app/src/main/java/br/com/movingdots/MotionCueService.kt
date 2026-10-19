@@ -60,22 +60,16 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
     private var detector: TripEndDetector? = null
     private var ending = false
 
-    /**
-     * Periodic timeout check while the CPU is awake. Handler delays stall while it sleeps, so
-     * samples and screen-on check too (the detector measures time with elapsedRealtime).
-     */
-    private val timeoutCheck = object : Runnable {
-        override fun run() {
-            detector?.let { onTripResult(it.check(SystemClock.elapsedRealtime())) }
-            if (detector != null && !ending) handler.postDelayed(this, TIMEOUT_CHECK_MS)
-        }
-    }
-
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             screenOn = intent.action == Intent.ACTION_SCREEN_ON
-            // A trip that ended while the phone slept ends now, before any dot is shown.
-            if (screenOn) detector?.let { onTripResult(it.check(SystemClock.elapsedRealtime())) }
+            // With the screen off Play services may stop sending samples. Re-requesting brings a
+            // fresh one within ~2 s, so the trip is judged on current information as soon as the
+            // dots can be seen again.
+            if (screenOn && detector != null) {
+                DetectionLog(this@MotionCueService).add("Screen on: asking for a fresh sample")
+                AutoDetection.startWatching(this@MotionCueService)
+            }
             updateSensors()
         }
     }
@@ -213,11 +207,9 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
             }
             DetectionLog(this).add("Watching for the end of the trip")
             AutoDetection.startWatching(this)
-            handler.postDelayed(timeoutCheck, TIMEOUT_CHECK_MS)
         } else if (!want && detector != null) {
             detector = null
             sampleListener = null
-            handler.removeCallbacks(timeoutCheck)
             AutoDetection.stopWatching(this)
             DetectionLog(this).add("Stopped watching for the end of the trip")
         }
@@ -356,7 +348,6 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         const val CHANNEL_ID = "cues"
         private const val NOTIFICATION_ID = 1
         private const val SAMPLING_US = 20_000 // 50 Hz
-        private const val TIMEOUT_CHECK_MS = 60_000L
         private const val MAX_TOUCH_PASSTHROUGH_ALPHA = 0.8f
 
         @Volatile
