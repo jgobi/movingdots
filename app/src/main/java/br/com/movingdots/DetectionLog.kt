@@ -9,7 +9,7 @@ import java.util.Locale
 
 /**
  * Diagnostic log of automatic detection: what Play services reported and what the app decided.
- * Shown in the app (with a copy button) so a ride can be analysed without adb; also mirrored to
+ * Shown in debug builds (with a copy button) so a ride can be analysed without adb; always mirrored to
  * logcat under [TAG]. One line per entry: loggedMillis<TAB>message.
  */
 class DetectionLog(context: Context) {
@@ -17,6 +17,8 @@ class DetectionLog(context: Context) {
 
     fun add(message: String) {
         Log.i(TAG, message)
+        // Release builds don't show the log, so they only write to logcat.
+        if (!BuildConfig.DEBUG) return
         file.appendText("${System.currentTimeMillis()}\t${message.replace('\n', ' ')}\n")
         // Appending is cheap; trimming rewrites the file, so only do it once in a while.
         if (file.length() > TRIM_BYTES) file.writeText(file.readLines().takeLast(MAX_ENTRIES).joinToString("\n", postfix = "\n"))

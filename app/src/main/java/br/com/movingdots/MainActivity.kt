@@ -131,7 +131,7 @@ class MainActivity : Activity() {
     override fun onStart() {
         super.onStart()
         MotionCueService.onStateChanged = { refreshMode() }
-        logRefresher.run()
+        if (BuildConfig.DEBUG) logRefresher.run()
         prefs.sp.registerOnSharedPreferenceChangeListener(prefsListener)
         // Preview demo: the dots sway as if the car gently accelerates (down) and brakes (up).
         demo = ValueAnimator.ofFloat(0f, 1f).apply {
@@ -242,7 +242,9 @@ class MainActivity : Activity() {
                 else -> R.string.mode_on_desc
             },
         )
-        findViewById<View>(R.id.detection_card).visibility = if (autoStopOn) View.VISIBLE else View.GONE
+        // The detection log is a testing aid: debug builds only.
+        findViewById<View>(R.id.detection_card).visibility =
+            if (BuildConfig.DEBUG && autoStopOn) View.VISIBLE else View.GONE
         refreshDetectionLog()
         status.setText(if (mode == CueModes.ON && running) R.string.state_showing else R.string.state_hidden)
     }

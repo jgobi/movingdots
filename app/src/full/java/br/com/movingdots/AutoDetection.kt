@@ -32,7 +32,8 @@ object AutoDetection {
     fun onProcessStart(context: Context) {
         val prefs = Prefs(context)
         val log = DetectionLog(context)
-        log.add("Process started" + previousExit(context, prefs).orEmpty())
+        // Diagnostics for test builds; release builds skip the exit-reason lookup.
+        if (BuildConfig.DEBUG) log.add("Process started" + previousExit(context, prefs).orEmpty())
         if (prefs.autoStop && !hasPermission(context)) {
             log.add("Activity recognition permission missing -> turn-off-when-leaving disabled")
             prefs.autoStop = false
