@@ -38,53 +38,38 @@ class Prefs(context: Context) {
         get() = sp.getInt(K_COLOR, 0)
         set(v) = sp.edit().putInt(K_COLOR, v).apply()
 
-    /** [CueModes.OFF], [CueModes.ON] or [CueModes.AUTO]. */
+    /** [CueModes.OFF] or [CueModes.ON]. */
     var mode: Int
         get() = sp.getInt(K_MODE, CueModes.OFF)
-        set(v) {
-            val e = sp.edit().putInt(K_MODE, v)
-            if (v != CueModes.OFF) e.putInt(K_LAST_ACTIVE, v)
-            e.apply()
-        }
+        set(v) = sp.edit().putInt(K_MODE, v).apply()
 
-    /** Debug builds only: use WALKING instead of IN_VEHICLE as the trigger, to test detection without a ride. */
-    var testWalking: Boolean
-        get() = BuildConfig.DEBUG && sp.getBoolean(K_TEST_WALKING, false)
-        set(v) = sp.edit().putBoolean(K_TEST_WALKING, v).apply()
+    /** "Turn off when I leave the vehicle" ("full" build only, see AutoDetection). */
+    var autoStop: Boolean
+        get() = sp.getBoolean(K_AUTO_STOP, false)
+        set(v) = sp.edit().putBoolean(K_AUTO_STOP, v).apply()
 
-    /** Identifies the current activity-transition registration (see TransitionRegistrar). */
-    var transitionGeneration: Int
-        get() = sp.getInt(K_GENERATION, 0)
-        set(v) = sp.edit().putInt(K_GENERATION, v).apply()
-
-    /** Wall time when sampling last concluded the user had left the vehicle. */
-    var sampledExitMillis: Long
-        get() = sp.getLong(K_SAMPLED_EXIT, 0L)
-        set(v) = sp.edit().putLong(K_SAMPLED_EXIT, v).apply()
+    /** The notification permission was requested once (later requests go to system settings). */
+    var notificationAsked: Boolean
+        get() = sp.getBoolean(K_NOTIFICATION_ASKED, false)
+        set(v) = sp.edit().putBoolean(K_NOTIFICATION_ASKED, v).apply()
 
     /** Timestamp of the last process exit already written to the detection log. */
     var lastExitLogged: Long
         get() = sp.getLong(K_LAST_EXIT, 0L)
         set(v) = sp.edit().putLong(K_LAST_EXIT, v).apply()
 
-    /** Fast sampling continues until this wall time (see TransitionRegistrar.boostSampling). */
-    var boostUntilMillis: Long
-        get() = sp.getLong(K_BOOST_UNTIL, 0L)
-        set(v) = sp.edit().putLong(K_BOOST_UNTIL, v).apply()
-
-    /** Interval of the current sampling request, or 0 if none was requested. */
-    var samplingIntervalMs: Long
-        get() = sp.getLong(K_SAMPLING_INTERVAL, 0L)
-        set(v) = sp.edit().putLong(K_SAMPLING_INTERVAL, v).apply()
-
-    /** Wall time of the last confident (but not strong) vehicle sample, for the two-sample rule. */
-    var confidentSampleMillis: Long
-        get() = sp.getLong(K_CONFIDENT_SAMPLE, 0L)
-        set(v) = sp.edit().putLong(K_CONFIDENT_SAMPLE, v).apply()
-
-    /** The last mode other than Off, restored by the Quick Settings tile. */
-    val lastActiveMode: Int
-        get() = sp.getInt(K_LAST_ACTIVE, CueModes.ON)
+    /**
+     * Up to 0.5 there was an Automatic mode (2) that started sessions by itself: it becomes Off
+     * with "turn off when I leave the vehicle" enabled, and its detection state is dropped.
+     */
+    fun migrate() {
+        if (sp.getInt(K_MODE, CueModes.OFF) != LEGACY_AUTO && !sp.contains("transition_generation")) return
+        val e = sp.edit()
+        if (sp.getInt(K_MODE, CueModes.OFF) == LEGACY_AUTO) e.putInt(K_MODE, CueModes.OFF).putBoolean(K_AUTO_STOP, true)
+        for (k in listOf("transition_generation", "sampled_exit", "boost_until", "sampling_interval",
+            "confident_sample", "last_active_mode", "test_walking", "confirm_until")) e.remove(k)
+        e.apply()
+    }
 
     /**
      * Horizontal displacement limit: the side columns sit [DotsOverlayView.INSET_DP] from the edge
@@ -102,15 +87,11 @@ class Prefs(context: Context) {
         const val K_COUNT = "count"
         const val K_COLOR = "color"
         const val K_TOP_BOTTOM = "top_bottom"
-        const val K_GENERATION = "transition_generation"
-        const val K_TEST_WALKING = "test_walking"
-        const val K_LAST_EXIT = "last_exit_logged"
-        const val K_BOOST_UNTIL = "boost_until"
-        const val K_SAMPLING_INTERVAL = "sampling_interval"
-        const val K_CONFIDENT_SAMPLE = "confident_sample"
-        const val K_SAMPLED_EXIT = "sampled_exit"
         const val K_MODE = "mode"
-        const val K_LAST_ACTIVE = "last_active_mode"
+        const val K_AUTO_STOP = "auto_stop"
+        const val K_LAST_EXIT = "last_exit_logged"
+        const val K_NOTIFICATION_ASKED = "notification_asked"
+        private const val LEGACY_AUTO = 2
 
         /** Settings that change how the overlay looks or moves. */
         val APPEARANCE_KEYS = setOf(K_GAIN, K_SIZE, K_OPACITY, K_COUNT, K_COLOR, K_TOP_BOTTOM)

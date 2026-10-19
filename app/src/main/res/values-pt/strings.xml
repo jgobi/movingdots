@@ -31,29 +31,17 @@
     </string-array>
     <string name="channel_name">Pistas de movimento</string>
     <string name="notif_running">Pistas de movimento ligadas</string>
-    <string name="notif_auto">Pistas ligadas — veículo detectado</string>
-    <string name="notif_paused">Pistas de movimento pausadas</string>
-    <string name="notif_snoozed">Pistas desativadas nesta viagem</string>
-    <string name="action_pause">Pausar</string>
-    <string name="action_resume">Retomar</string>
     <string name="tile_label">Pistas de movimento</string>
     <string name="overlay_hint">O Moving Dots precisa de permissão para desenhar os pontos sobre outros apps.</string>
     <string name="preview_caption">Prévia — acelerando e freando suavemente</string>
     <string name="dot_color">Cor dos pontos</string>
     <string name="mode_off">Desligado</string>
     <string name="mode_on">Ligado</string>
-    <string name="mode_auto">Automático</string>
     <string name="state_hidden">Pontos ocultos</string>
     <string name="state_showing">Pontos visíveis</string>
-    <string name="state_waiting">Aguardando um veículo</string>
-    <string name="state_paused">Pausado</string>
-    <string name="state_snoozed">Ocultos nesta viagem</string>
-    <string name="mode_off_desc">Sem pontos e sem detecção de veículo.</string>
-    <string name="mode_on_desc">Os pontos ficam ligados até você desligar — aqui, na notificação ou no bloco de Configurações rápidas.</string>
-    <string name="mode_auto_desc">Os pontos aparecem em até uns dois minutos andando de carro ou ônibus e somem alguns minutos depois que você sai. Dirigindo? Oculte-os nesta viagem pela notificação. A detecção roda no Google Play services e gasta pouca bateria.</string>
+    <string name="mode_off_desc">Os pontos estão desligados. Ligue-os para a viagem.</string>
+    <string name="mode_on_desc">Os pontos ficam ligados até você desligar, aqui ou no bloco de Configurações rápidas.</string>
     <string name="action_turn_off">Desligar</string>
-    <string name="action_hide_trip">Ocultar nesta viagem</string>
-    <string name="action_show_again">Mostrar de novo</string>
     <string name="top_bottom_dots">Mostrar pontos também em cima e embaixo</string>
     <string name="history">Histórico</string>
     <string name="history_show_all">Ver todas (%d)</string>
@@ -68,9 +56,14 @@
     <string name="history_clear_confirm">Limpar</string>
     <string name="with_dots">com pontos</string>
     <string name="without_dots">sem pontos</string>
-    <string name="detection_title">Detecção automática</string>
+    <string name="detection_title">Log de detecção de veículo</string>
     <string name="detection_empty">Nenhum evento de detecção ainda.</string>
     <string name="detection_copy">Copiar log</string>
     <string name="detection_clear">Limpar log</string>
     <string name="detection_copied">Log copiado</string>
+    <string name="auto_stop">Desligar ao sair do veículo</string>
+    <string name="auto_stop_hint">Com os pontos ligados, o reconhecimento de atividade do Google Play services acompanha o fim da viagem: depois que um veículo é detectado, os pontos desligam quando você começa a andar.</string>
+    <string name="auto_stop_waiting">Desliga quando você sair do veículo</string>
+    <string name="auto_stop_armed">Veículo detectado · desliga quando você andar</string>
+    <string name="show_notification">Mostrar notificação com os pontos ligados</string>
 </resources>

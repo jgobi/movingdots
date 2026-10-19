@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- FOSS build: no Automatic mode, so texts don't mention vehicle detection. -->
-<resources>
-    <string name="mode_off_desc">The dots are off. Turn them on for the ride.</string>
-</resources>

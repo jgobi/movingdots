@@ -6,40 +6,33 @@ import android.provider.Settings
 import android.util.Log
 
 /**
- * The single source of truth for what the app is doing:
- *  - OFF: no dots, no vehicle detection.
- *  - ON: dots shown until the user turns them off.
- *  - AUTO: vehicle detection registered; dots shown only while in a vehicle.
+ * The single source of truth for whether the dots are on. Sessions are always started by hand
+ * (app or Quick Settings tile); with "turn off when I leave the vehicle" they may end by themselves.
  */
 object CueModes {
     const val OFF = 0
     const val ON = 1
-    const val AUTO = 2
 
-    fun icon(mode: Int) = if (mode == AUTO) R.drawable.ic_mode_auto else R.drawable.ic_mode_on
+    /** The tile and notification show a car while the dots can turn themselves off. */
+    fun icon(context: Context) =
+        if (AutoDetection.isEnabled(context)) R.drawable.ic_mode_auto else R.drawable.ic_mode_on
 
     /** Applies [mode]. Returns false (and falls back to OFF) if the dots couldn't be started. */
     fun set(context: Context, mode: Int): Boolean {
         val prefs = Prefs(context)
-        if (mode != OFF && !Settings.canDrawOverlays(context)) return false
-        if (mode == AUTO || prefs.mode == AUTO) {
-            DetectionLog(context).add("Mode -> ${arrayOf("Off", "On", "Automatic")[mode]}")
-        }
+        if (mode == ON && !Settings.canDrawOverlays(context)) return false
         prefs.mode = mode
-        AutoDetection.onModeChanged(context, mode)
-        when (mode) {
-            OFF -> MotionCueService.stop(context)
-            ON -> try {
-                MotionCueService.start(context, auto = false)
-            } catch (e: ForegroundServiceStartNotAllowedException) {
-                Log.w("MotionCue", "Not allowed to start cues now", e)
-                prefs.mode = OFF
-                return false
-            }
-            // The dots wait for vehicle detection. A session showing from On mode is ended rather
-            // than made automatic, so it can't outlive a ride it never detected.
-            AUTO -> MotionCueService.stop(context)
+        if (mode == OFF) {
+            MotionCueService.stop(context)
+            return true
         }
-        return true
+        return try {
+            MotionCueService.start(context)
+            true
+        } catch (e: ForegroundServiceStartNotAllowedException) {
+            Log.w("MotionCue", "Not allowed to start cues now", e)
+            prefs.mode = OFF
+            false
+        }
     }
 }

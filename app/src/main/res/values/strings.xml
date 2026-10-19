@@ -32,11 +32,6 @@
     </string-array>
     <string name="channel_name">Motion cues</string>
     <string name="notif_running">Motion cues on</string>
-    <string name="notif_auto">Motion cues on — vehicle detected</string>
-    <string name="notif_paused">Motion cues paused</string>
-    <string name="notif_snoozed">Motion cues snoozed for this trip</string>
-    <string name="action_pause">Pause</string>
-    <string name="action_resume">Resume</string>
     <string name="tile_label">Motion cues</string>
     <string name="fgs_subtype" translatable="false">Motion-sickness visual cue overlay driven by motion sensors</string>
     <string name="overlay_hint">Moving Dots needs permission to draw the dots on top of other apps.</string>
@@ -44,18 +39,11 @@
     <string name="dot_color">Dot color</string>
     <string name="mode_off">Off</string>
     <string name="mode_on">On</string>
-    <string name="mode_auto">Automatic</string>
     <string name="state_hidden">Dots hidden</string>
     <string name="state_showing">Dots showing</string>
-    <string name="state_waiting">Waiting for a vehicle</string>
-    <string name="state_paused">Paused</string>
-    <string name="state_snoozed">Hidden for this trip</string>
-    <string name="mode_off_desc">No dots and no vehicle detection.</string>
-    <string name="mode_on_desc">The dots stay on until you turn them off — here, in the notification or in the Quick Settings tile.</string>
-    <string name="mode_auto_desc">The dots appear within a couple of minutes of riding in a car or bus and hide a few minutes after you leave. Driving? Hide them for the trip from the notification. Detection runs in Google Play services and uses little battery.</string>
+    <string name="mode_off_desc">The dots are off. Turn them on for the ride.</string>
+    <string name="mode_on_desc">The dots stay on until you turn them off, here or in the Quick Settings tile.</string>
     <string name="action_turn_off">Turn off</string>
-    <string name="action_hide_trip">Hide for this trip</string>
-    <string name="action_show_again">Show again</string>
     <string name="top_bottom_dots">Also show dots at the top and bottom</string>
     <string name="history">History</string>
     <string name="history_show_all">Show all (%d)</string>
@@ -70,12 +58,14 @@
     <string name="with_dots">with dots</string>
     <string name="without_dots">without dots</string>
     <string name="history_meta" translatable="false">%1$s · %2$s</string>
-    <string name="detection_title">Automatic detection</string>
+    <string name="detection_title">Vehicle detection log</string>
     <string name="detection_empty">No detection events yet.</string>
     <string name="detection_copy">Copy log</string>
     <string name="detection_clear">Clear log</string>
     <string name="detection_copied">Log copied</string>
-    <string name="test_trigger" translatable="false">Test trigger (debug build only)</string>
-    <string name="test_vehicle" translatable="false">Vehicle</string>
-    <string name="test_walking" translatable="false">Walking</string>
+    <string name="auto_stop">Turn off when I leave the vehicle</string>
+    <string name="auto_stop_hint">While the dots are on, Google Play services activity recognition watches for the end of the ride: once a vehicle has been detected, the dots turn off when you start walking.</string>
+    <string name="auto_stop_waiting">Turns off when you leave the vehicle</string>
+    <string name="auto_stop_armed">Vehicle detected · turns off when you walk away</string>
+    <string name="show_notification">Show a notification while the dots are on</string>
 </resources>

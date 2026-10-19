@@ -3,68 +3,41 @@ package br.com.movingdots
 import android.app.ActivityManager
 import android.app.ApplicationExitInfo
 import android.content.Context
-import br.com.movingdots.auto.TransitionRegistrar
+import br.com.movingdots.auto.ActivitySampler
 
 /**
- * Automatic mode for the "full" build, backed by Google Play services activity recognition.
- * The "foss" build has an object with the same API that disables the feature, so common code
- * calls only this facade and never Play services directly.
+ * "Turn off when I leave the vehicle" for the "full" build, backed by Google Play services
+ * activity recognition. The "foss" build has an object with the same API that reports the feature
+ * as unsupported, so common code never touches Play services directly.
  */
 object AutoDetection {
-    /** Play services is present, so Automatic mode can be offered. */
-    fun isSupported(context: Context) = TransitionRegistrar.isAvailable(context)
+    /** Play services is present, so the option can be offered. */
+    fun isSupported(context: Context) = ActivitySampler.isAvailable(context)
 
-    fun hasPermission(context: Context) = TransitionRegistrar.hasPermission(context)
+    fun hasPermission(context: Context) = ActivitySampler.hasPermission(context)
 
-    /** The trigger activity's name, for logs ("IN_VEHICLE", or "WALKING" in a debug test). */
-    fun targetName(context: Context) = TransitionRegistrar.name(TransitionRegistrar.target(context))
+    /** The option is on and can work right now. */
+    fun isEnabled(context: Context) =
+        Prefs(context).autoStop && isSupported(context) && hasPermission(context)
 
-    /** Called by [CueModes.set] after the new mode was stored. */
-    fun onModeChanged(context: Context, mode: Int) {
-        if (mode == CueModes.AUTO) {
-            TransitionRegistrar.register(context)
-            // Sample fast for the first minutes, so enabling Automatic inside a vehicle reacts quickly.
-            TransitionRegistrar.boostSampling(context)
-        } else {
-            TransitionRegistrar.unregister(context)
-            TransitionRegistrar.syncSampling(context)
-        }
-    }
+    /** A session started (or the option was enabled during one): sample until it ends. */
+    fun startWatching(context: Context) = ActivitySampler.start(context)
+
+    fun stopWatching(context: Context) = ActivitySampler.stop(context)
 
     /**
      * Every process start: logs why the previous process ended (OEM "cleaners" kill the app
-     * often) and repairs Automatic mode's subscriptions, which a reboot clears.
+     * often), and switches the option off if its permission was revoked.
      */
     fun onProcessStart(context: Context) {
         val prefs = Prefs(context)
         val log = DetectionLog(context)
         log.add("Process started" + previousExit(context, prefs).orEmpty())
-        if (prefs.mode != CueModes.AUTO) return
-        if (!hasPermission(context)) {
-            // Revoking the permission kills the process, so this is where it's noticed: without it
-            // nothing is detected, and Automatic would wait forever.
-            log.add("Activity recognition permission missing -> mode Off")
-            CueModes.set(context, CueModes.OFF)
-            return
+        if (prefs.autoStop && !hasPermission(context)) {
+            log.add("Activity recognition permission missing -> turn-off-when-leaving disabled")
+            prefs.autoStop = false
         }
-        // Both calls are no-ops when nothing was lost.
-        TransitionRegistrar.ensureRegistered(context)
-        TransitionRegistrar.syncSampling(context)
     }
-
-    /** After an app update the transition registration is renewed, as cheap insurance. */
-    fun onAppUpdated(context: Context) {
-        if (Prefs(context).mode == CueModes.AUTO) TransitionRegistrar.register(context)
-    }
-
-    /** A session started, ended or changed type: sampling follows (fast during automatic sessions). */
-    fun onSessionChanged(context: Context) = TransitionRegistrar.syncSampling(context)
-
-    /**
-     * Samples showed the vehicle was left. A fresh transition registration keeps Play services'
-     * stuck "in vehicle" state from swallowing the next ride's ENTER.
-     */
-    fun onVehicleLeft(context: Context) = TransitionRegistrar.register(context)
 
     private fun previousExit(context: Context, prefs: Prefs): String? {
         val info = context.getSystemService(ActivityManager::class.java)

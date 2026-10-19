@@ -6,10 +6,10 @@ pushes them up, turns push them sideways (the direction of the inertial force yo
 
 ## Build flavors
 
-| Flavor | Application id | Automatic mode | Dependencies | Distribution |
+| Flavor | Application id | Turn off when leaving the vehicle | Dependencies | Distribution |
 |---|---|---|---|---|
 | `full` | `br.com.movingdots` | Yes (Google Play services) | `play-services-location` | APK release for sideloading |
-| `foss` | `br.com.movingdots.foss` | No (Off / On only) | none besides the Kotlin stdlib | F-Droid |
+| `foss` | `br.com.movingdots.foss` | No | none besides the Kotlin stdlib | F-Droid |
 
 The `foss` build has a teal icon (the `full` build's is blue), so both can be installed side by side.
 
@@ -25,11 +25,13 @@ Common code only talks to `AutoDetection`, which exists once per flavor with the
   spring. That keeps the 0.1–0.5 Hz band where car sickness peaks and rejects hand jitter.
 - `DotsOverlayView` draws the dots once; motion is applied with `translationX/Y` only.
 - `MotionCueService` is a foreground service; sensors run only while the screen is on.
-- Automatic mode (`full` only) samples Play services' activity classifier (every 2 min while
-  waiting, every 30 s in a session). It starts the cues on one `IN_VEHICLE` sample ≥75% or two
-  ≥50%, and ends them after 3 min without one (`ON_BICYCLE` ≥50% also keeps a session going, since
-  slow, bumpy traffic gets classified that way). An Activity Transition API ENTER starts a session
-  early when it arrives; its EXIT is only logged.
+- The dots are always turned on by hand (app or Quick Settings tile). With "turn off when I leave
+  the vehicle" (`full` only), Play services' activity classifier is sampled every 30 s while they
+  are on, and `TripEndDetector` turns them off once a vehicle was seen and the user then walks
+  (or after 15 min without vehicle evidence). Starting automatically was dropped: on the test
+  device Play services withheld its events from the app while it was in the background.
+- The notification is optional: Android requires one for the foreground service, but without the
+  notification permission (or with its channel turned off) the dots run silently.
 
 ## Build
 
@@ -58,15 +60,6 @@ adb logcat -s MotionCue MotionCueAuto              # fwd/lat acceleration (debug
 ```
 
 For the `foss` build, use the package `br.com.movingdots.foss`.
-
-Simulate a vehicle ENTER (`full` debug build only):
-
-```sh
-adb shell am broadcast -n br.com.movingdots/.auto.DebugTransitionReceiver
-```
-
-On Android 15+ a broadcast from adb is not exempt from background foreground-service limits, so it
-may only start the cues while the app is in the foreground; real transition events are exempt.
 
 ## License
 

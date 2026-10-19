@@ -9,43 +9,29 @@ import android.service.quicksettings.Tile
 import android.graphics.drawable.Icon
 import android.service.quicksettings.TileService
 
-/** Quick Settings tile: switches between Off and the last active mode (On or Automatic). */
+/** Quick Settings tile: turns the dots on and off. */
 class CueTileService : TileService() {
 
     override fun onStartListening() = refresh()
 
     override fun onClick() {
-        val prefs = Prefs(this)
-        if (prefs.mode != CueModes.OFF) {
+        if (Prefs(this).mode == CueModes.ON) {
             CueModes.set(this, CueModes.OFF)
-        } else {
-            val target = prefs.lastActiveMode
-            val ready = Settings.canDrawOverlays(this) &&
-                (target != CueModes.AUTO || AutoDetection.hasPermission(this))
-            // Permissions are granted in the app; a refused background start also falls back to it.
-            if (!ready || !CueModes.set(this, target)) {
-                openApp()
-                return
-            }
+        } else if (!Settings.canDrawOverlays(this) || !CueModes.set(this, CueModes.ON)) {
+            // The overlay permission is granted in the app; a refused background start also falls back to it.
+            openApp()
+            return
         }
         refresh()
     }
 
-    private fun modeName(mode: Int) = when (mode) {
-        CueModes.ON -> R.string.mode_on
-        CueModes.AUTO -> R.string.mode_auto
-        else -> R.string.mode_off
-    }
-
     private fun refresh() {
         val tile = qsTile ?: return
-        val mode = Prefs(this).mode
-        tile.state = if (mode == CueModes.OFF) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE
-        val name = getString(modeName(mode))
-        // Icon-only panels (e.g. Infinix XOS) show no text, so the icon tells On and Automatic apart;
-        // Off shows the last active mode's icon, greyed out by the inactive state.
-        val iconMode = if (mode == CueModes.OFF) Prefs(this).lastActiveMode else mode
-        tile.icon = Icon.createWithResource(this, CueModes.icon(iconMode))
+        val on = Prefs(this).mode == CueModes.ON
+        tile.state = if (on) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+        // Icon-only panels (e.g. Infinix XOS) show no text: a car marks "turns off when I leave the vehicle".
+        tile.icon = Icon.createWithResource(this, CueModes.icon(this))
+        val name = getString(if (on) R.string.mode_on else R.string.mode_off)
         tile.subtitle = name
         tile.stateDescription = name
         tile.updateTile()
