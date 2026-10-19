@@ -94,15 +94,6 @@
                 android:textColor="@color/on_primary_container"
                 android:textSize="12sp" />
 
-            <CheckBox
-                android:id="@+id/show_notification"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:buttonTint="@color/on_primary_container"
-                android:minHeight="48dp"
-                android:text="@string/show_notification"
-                android:textColor="@color/on_primary_container" />
-
             <TextView
                 android:id="@+id/overlay_hint"
                 style="@style/Body"
@@ -295,6 +286,23 @@
                         android:text="@string/history_clear" />
                 </LinearLayout>
             </LinearLayout>
+        </LinearLayout>
+
+        <!-- Other settings -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/SectionTitle"
+                android:text="@string/section_other" />
+
+            <CheckBox
+                android:id="@+id/show_notification"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:buttonTint="@color/primary"
+                android:minHeight="48dp"
+                android:text="@string/show_notification" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

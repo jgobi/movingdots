@@ -64,8 +64,9 @@
     <string name="detection_clear">Clear log</string>
     <string name="detection_copied">Log copied</string>
     <string name="auto_stop">Turn off when I leave the vehicle</string>
-    <string name="auto_stop_hint">While the dots are on, Google Play services activity recognition watches for the end of the ride: once a vehicle has been detected, the dots turn off when you start walking.</string>
+    <string name="auto_stop_hint">Uses Google Play services to notice when you get off and start walking.</string>
     <string name="auto_stop_waiting">Turns off when you leave the vehicle</string>
     <string name="auto_stop_armed">Vehicle detected · turns off when you walk away</string>
     <string name="show_notification">Show a notification while the dots are on</string>
+    <string name="section_other">Other settings</string>
 </resources>

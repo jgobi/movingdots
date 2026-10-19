@@ -62,8 +62,9 @@
     <string name="detection_clear">Limpar log</string>
     <string name="detection_copied">Log copiado</string>
     <string name="auto_stop">Desligar ao sair do veículo</string>
-    <string name="auto_stop_hint">Com os pontos ligados, o reconhecimento de atividade do Google Play services acompanha o fim da viagem: depois que um veículo é detectado, os pontos desligam quando você começa a andar.</string>
+    <string name="auto_stop_hint">Usa o Google Play services para notar quando você desce e começa a andar.</string>
     <string name="auto_stop_waiting">Desliga quando você sair do veículo</string>
     <string name="auto_stop_armed">Veículo detectado · desliga quando você andar</string>
     <string name="show_notification">Mostrar notificação com os pontos ligados</string>
+    <string name="section_other">Outras configurações</string>
 </resources>
