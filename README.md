@@ -73,3 +73,13 @@ of the License, or (at your option) any later version (`GPL-3.0-or-later`).
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
 even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 General Public License for more details.
+
+### Additional permission under GNU GPL version 3 section 7
+
+If you modify this Program, or any covered work, by linking or combining it with Google Play
+services (or a modified version of that library), containing parts covered by the terms of the
+Google Play services license, the licensors of this Program grant you additional permission to
+convey the resulting work.
+
+This permission is what allows the `full` build, which uses Google Play services for "turn off
+when I leave the vehicle", to be distributed. The `foss` build doesn't use it.
