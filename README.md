@@ -24,8 +24,13 @@ the app lets you rate rides with and without the dots and see whether they help 
 
 | Version | Where | Turn off when leaving the vehicle |
 |---|---|---|
-| Free (`foss`) | F-Droid (coming), GitHub Releases | No |
-| With Google Play services (`full`) | GitHub Releases | Yes |
+| Free (`foss`) | GitHub Releases (APK), F-Droid (coming) | No |
+| With Google Play services (`full`) | GitHub Releases (APK) | Yes |
+
+Both versions are available as APKs for sideloading from the
+[GitHub Releases](https://github.com/jgobi/moving-dots/releases) page. The `foss` version will
+also be on F-Droid; F-Droid signs apps with its own key, so a `foss` installed from GitHub and one
+installed from F-Droid can't update each other (uninstall one to switch).
 
 Both need Android 12 or later. They have different package names and icon colors (teal for
 `foss`, blue for `full`), so they can be installed side by side.
