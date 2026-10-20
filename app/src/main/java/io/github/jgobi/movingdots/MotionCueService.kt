@@ -228,6 +228,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         updateSensors()
         if (BuildConfig.DEBUG) handler.postDelayed(heartbeat, HEARTBEAT_MS)
         updateWatching()
+        RecentsVisibility.update(this, dotsOn = true)
         TileService.requestListeningState(this, android.content.ComponentName(this, CueTileService::class.java))
     }
 
@@ -242,6 +243,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
             overlay?.let { windowManager?.removeView(it) }
             overlay = null
             updateWatching()
+            RecentsVisibility.update(this, dotsOn = false)
             onStateChanged?.invoke()
             TileService.requestListeningState(this, android.content.ComponentName(this, CueTileService::class.java))
         }

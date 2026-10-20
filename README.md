@@ -52,9 +52,9 @@ the dots are on and the screen is on.
 
 ## Known limitations
 
-- The app doesn't appear in recent apps. Some systems (Infinix XOS, and likely other aggressive
-  OEM cleaners) kill an app whose card is swiped away, and the dots with it; without a card there's
-  nothing to swipe. Open the app from its icon, or long-press the Quick Settings tile.
+- While the dots are on, the app doesn't appear in recent apps. Some systems (Infinix XOS, and
+  likely other aggressive OEM cleaners) kill an app whose card is swiped away, and the dots with it.
+  Open the app from its icon, or long-press the Quick Settings tile.
 - The dots can't be hidden automatically for screenshots: Android doesn't tell apps before a
   screenshot is taken. Turn them off from the tile first.
 - "Turn off when I leave the vehicle" depends on Google Play services recognizing the vehicle. On

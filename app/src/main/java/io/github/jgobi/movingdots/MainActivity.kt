@@ -234,6 +234,8 @@ class MainActivity : Activity() {
         updatingUi = false
 
         val running = MotionCueService.isRunning
+        // A task created after the dots were turned on (e.g. from the tile) must be excluded too.
+        RecentsVisibility.update(this, running)
         modeDesc.setText(
             when {
                 mode == CueModes.OFF -> R.string.mode_off_desc

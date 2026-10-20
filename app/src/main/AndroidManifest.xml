@@ -14,12 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!-- Kept out of recent apps: on Infinix XOS (and similar OEM systems) swiping the app's card
-             up kills the whole process, overlay included, and nothing restarts it. Without a card,
-             there's nothing to swipe while the dots run. -->
+        <!-- Excluded from recent apps while the dots are on: see RecentsVisibility. -->
         <activity
             android:name=".MainActivity"
-            android:excludeFromRecents="true"
             android:exported="true"
             android:launchMode="singleTop">
             <intent-filter>
