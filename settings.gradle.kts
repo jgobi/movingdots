@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "moving-dots"
+rootProject.name = "movingdots"
 include(":app")

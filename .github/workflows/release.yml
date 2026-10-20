@@ -46,8 +46,8 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           mkdir dist
-          cp app/build/outputs/apk/full/release/app-full-release.apk "dist/moving-dots-$TAG-full.apk"
-          cp app/build/outputs/apk/foss/release/app-foss-release.apk "dist/moving-dots-$TAG-foss.apk"
+          cp app/build/outputs/apk/full/release/app-full-release.apk "dist/movingdots-$TAG-full.apk"
+          cp app/build/outputs/apk/foss/release/app-foss-release.apk "dist/movingdots-$TAG-foss.apk"
           gh release create "$TAG" dist/*.apk --draft --verify-tag --title "Moving Dots $TAG" --generate-notes
 
       - name: Remove the release key

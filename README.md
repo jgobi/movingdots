@@ -28,7 +28,7 @@ the app lets you rate rides with and without the dots and see whether they help 
 | With Google Play services (`full`) | GitHub Releases (APK) | Yes |
 
 Both versions are available as APKs for sideloading from the
-[GitHub Releases](https://github.com/jgobi/moving-dots/releases) page. The `foss` version will
+[GitHub Releases](https://github.com/jgobi/movingdots/releases) page. The `foss` version will
 also be on F-Droid; F-Droid signs apps with its own key, so a `foss` installed from GitHub and one
 installed from F-Droid can't update each other (uninstall one to switch).
 
