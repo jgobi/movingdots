@@ -19,11 +19,11 @@ val releaseKey: Map<String, String>? = run {
 }
 
 android {
-    namespace = "br.com.movingdots"
+    namespace = "io.github.jgobi.movingdots"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "br.com.movingdots"
+        applicationId = "io.github.jgobi.movingdots"
         minSdk = 31
         targetSdk = 35
         versionCode = 9

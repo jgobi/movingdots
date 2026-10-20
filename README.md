@@ -62,8 +62,8 @@ the dots are on and the screen is on.
 
 | Flavor | Application id | Turn off when leaving the vehicle | Dependencies | Distribution |
 |---|---|---|---|---|
-| `full` | `br.com.movingdots` | Yes (Google Play services) | `play-services-location` | APK release for sideloading |
-| `foss` | `br.com.movingdots.foss` | No | none besides the Kotlin stdlib | F-Droid |
+| `full` | `io.github.jgobi.movingdots` | Yes (Google Play services) | `play-services-location` | APK release for sideloading |
+| `foss` | `io.github.jgobi.movingdots.foss` | No | none besides the Kotlin stdlib | F-Droid |
 
 The `foss` build has a teal icon (the `full` build's is blue), so both can be installed side by side.
 
@@ -126,13 +126,13 @@ listed):
 ### Checking on a device
 
 ```sh
-adb shell dumpsys gfxinfo br.com.movingdots       # frames rendered; should not grow while still
-adb shell dumpsys meminfo br.com.movingdots       # PSS
-adb shell dumpsys sensorservice | grep -i movingdots   # no active connections with screen off
-adb logcat -s MotionCue MotionCueAuto              # fwd/lat acceleration (debug build), detection
+adb shell dumpsys gfxinfo io.github.jgobi.movingdots  # frames rendered; should not grow while still
+adb shell dumpsys meminfo io.github.jgobi.movingdots  # PSS
+adb shell dumpsys sensorservice | grep -i movingdots  # no active connections with screen off
+adb logcat -s MotionCue MotionCueAuto                 # fwd/lat acceleration (debug build), detection
 ```
 
-For the `foss` build, use the package `br.com.movingdots.foss`.
+For the `foss` build, use the package `io.github.jgobi.movingdots.foss`.
 
 ## License
 
