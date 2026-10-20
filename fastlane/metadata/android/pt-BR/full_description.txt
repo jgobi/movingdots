@@ -1,0 +1,22 @@
+Ler ou assistir algo no celular dentro de um carro ou ônibus em movimento deixa muita gente enjoada. O ouvido interno sente o veículo acelerar, frear e fazer curvas, mas os olhos veem uma tela parada, e esse desencontro é a causa do enjoo de movimento.
+
+O Moving Dots desenha pontinhos nas bordas da tela, por cima de qualquer app, que se movem com o veículo: acelerar empurra os pontos para baixo, frear para cima, e as curvas para os lados, na direção que o corpo sente. Assim, o que você vê combina com o que você sente, e o meio da tela continua livre.
+
+<b>Recursos</b>
+<ul>
+<li>Funciona sobre qualquer app; os toques passam para o app de baixo</li>
+<li>Bloco nas Configurações rápidas para ligar e desligar os pontos com um toque</li>
+<li>Sensibilidade, tamanho, opacidade, quantidade e cor ajustáveis, com prévia ao vivo</li>
+<li>Pontos só nas laterais, ou também em cima e embaixo</li>
+<li>Avaliação opcional das viagens (escala de sintomas de 0 a 10), para comparar viagens com e sem os pontos</li>
+<li>Notificação opcional</li>
+</ul>
+
+<b>Leve e privado</b>
+<ul>
+<li>Sem permissão de internet: nada sai do seu celular</li>
+<li>Os sensores só funcionam com os pontos e a tela ligados</li>
+<li>Um app pequeno: menos de 100 KB</li>
+</ul>
+
+Use como passageiro, nunca dirigindo. As evidências científicas sobre pistas visuais de movimento ainda são limitadas: elas ajudam algumas pessoas mais do que outras, e a avaliação das viagens serve para você conferir se funcionam no seu caso.

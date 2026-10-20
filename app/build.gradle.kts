@@ -1,6 +1,21 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+}
+
+/**
+ * Release signing key, from environment variables (CI, from repository secrets) or from a local,
+ * git-ignored keystore.properties with the same keys. Without one, release APKs are unsigned:
+ * that's what F-Droid expects, since it signs its builds with its own key.
+ */
+val releaseKey: Map<String, String>? = run {
+    val file = rootProject.file("keystore.properties")
+    val props = Properties().apply { if (file.exists()) file.inputStream().use { load(it) } }
+    val keys = listOf("MOVINGDOTS_KEYSTORE", "MOVINGDOTS_KEYSTORE_PASSWORD", "MOVINGDOTS_KEY_ALIAS", "MOVINGDOTS_KEY_PASSWORD")
+    val values = keys.associateWith { System.getenv(it) ?: props.getProperty(it) }
+    if (values.values.all { !it.isNullOrBlank() }) values.mapValues { it.value!! } else null
 }
 
 android {
@@ -16,8 +31,8 @@ android {
         resourceConfigurations += listOf("en", "pt")
     }
 
-    // "full": sideloaded release with Automatic mode (Google Play services).
-    // "foss": F-Droid build without any Google dependency and without Automatic mode. Its own
+    // "full": sideloaded release with "turn off when I leave the vehicle" (Google Play services).
+    // "foss": F-Droid build without any Google dependency, and so without that option. Its own
     // application id and icon color let both be installed side by side for testing.
     flavorDimensions += "distribution"
     productFlavors {
@@ -32,13 +47,23 @@ android {
         }
     }
 
+    signingConfigs {
+        releaseKey?.let { key ->
+            create("release") {
+                storeFile = rootProject.file(key.getValue("MOVINGDOTS_KEYSTORE"))
+                storePassword = key.getValue("MOVINGDOTS_KEYSTORE_PASSWORD")
+                keyAlias = key.getValue("MOVINGDOTS_KEY_ALIAS")
+                keyPassword = key.getValue("MOVINGDOTS_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Sideloaded/personal build: sign with the debug key so the release APK is installable.
-            signingConfig = signingConfigs.getByName("debug")
+            if (releaseKey != null) signingConfig = signingConfigs.getByName("release")
         }
     }
 

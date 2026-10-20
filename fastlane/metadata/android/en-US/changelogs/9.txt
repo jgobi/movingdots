@@ -1,0 +1,6 @@
+First public version.
+
+- Dots that move with the vehicle, over any app
+- Quick Settings tile
+- Adjustable appearance with a live preview
+- Ride ratings

@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Unit tests
+        run: ./gradlew testFullDebugUnitTest testFossDebugUnitTest
+
+      - name: Lint
+        run: ./gradlew lintFullRelease lintFossRelease
+
+      - name: Build release APKs (unsigned)
+        run: ./gradlew assembleFullRelease assembleFossRelease
+
+      # F-Droid only accepts free dependencies: the foss build must pull in nothing besides the
+      # Kotlin standard library (no Google Play services, no AndroidX).
+      - name: Check foss dependencies
+        run: |
+          ./gradlew -q :app:dependencies --configuration fossReleaseRuntimeClasspath > foss-deps.txt
+          cat foss-deps.txt
+          if grep -E "com\.google|androidx|firebase" foss-deps.txt; then
+            echo "::error::The foss build depends on Google or AndroidX libraries"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports
+          path: app/build/reports/
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apks-unsigned
+          path: app/build/outputs/apk/*/release/*.apk

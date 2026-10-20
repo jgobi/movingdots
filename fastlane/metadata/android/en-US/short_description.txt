@@ -1,0 +1,1 @@
+Vehicle motion cues: dots that move with the car to ease motion sickness

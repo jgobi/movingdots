@@ -1,0 +1,22 @@
+Reading or watching something on your phone in a moving car or bus makes many people feel sick. Your inner ear feels the vehicle accelerate, brake and turn, but your eyes see a screen that stands still, and that mismatch is behind motion sickness.
+
+Moving Dots draws small dots along the edges of the screen, on top of any app, that move with the vehicle: accelerating pushes them down, braking pushes them up, and turns push them sideways, in the direction your body feels. What you see then matches what you feel, while the middle of the screen stays free.
+
+<b>Features</b>
+<ul>
+<li>Works over any app; touches pass through to the app underneath</li>
+<li>Quick Settings tile to turn the dots on and off with one tap</li>
+<li>Adjustable sensitivity, dot size, opacity, count and color, with a live preview</li>
+<li>Dots on the side edges only, or also at the top and bottom</li>
+<li>Optional ride ratings (a 0–10 symptom scale) to compare rides with and without the dots</li>
+<li>Optional notification</li>
+</ul>
+
+<b>Light and private</b>
+<ul>
+<li>No internet permission: nothing ever leaves your phone</li>
+<li>Sensors run only while the dots are on and the screen is on</li>
+<li>A tiny app: under 100 KB</li>
+</ul>
+
+Use it as a passenger, never while driving. The scientific evidence for visual motion cues is still limited: if they help, they help some people more than others, so the ride ratings are there to check whether they work for you.

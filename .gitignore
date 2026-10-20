@@ -7,3 +7,8 @@ local.properties
 
 # Local test screenshots
 /*.jpg
+
+# Release signing (never commit)
+keystore.properties
+*.jks
+*.keystore

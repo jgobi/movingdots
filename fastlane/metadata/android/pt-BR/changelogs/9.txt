@@ -1,0 +1,6 @@
+Primeira versão pública.
+
+- Pontos que se movem com o veículo, sobre qualquer app
+- Bloco nas Configurações rápidas
+- Aparência ajustável com prévia ao vivo
+- Avaliação das viagens
