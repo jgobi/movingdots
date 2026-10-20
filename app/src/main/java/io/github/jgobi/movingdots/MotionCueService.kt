@@ -54,6 +54,30 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
     private var hasRotation = false
     private var lastAccelMs = 0L
     private var lastRotationMs = 0L
+    // Debug diagnostics for the "frozen dots" report: events since the last heartbeat.
+    private var accelEvents = 0
+    private var rotationEvents = 0
+    private val lastAccel = FloatArray(3)
+
+    /** Debug builds only: the service's view of sensors, screen and overlay every 30 s. */
+    private val heartbeat = object : Runnable {
+        override fun run() {
+            val v = overlay
+            DetectionLog(this@MotionCueService).add(
+                "Heartbeat: screenOn=$screenOn interactive=${getSystemService(PowerManager::class.java).isInteractive} " +
+                    "sensorsOn=$sensorsOn accel=$accelEvents rot=$rotationEvents hasRot=$hasRotation " +
+                    "a=%.2f,%.2f,%.2f fwd=%.2f lat=%.2f dx=%.1f dy=%.1f ".format(
+                        lastAccel[0], lastAccel[1], lastAccel[2],
+                        processor.accelForward, processor.accelLateral, processor.dx, processor.dy,
+                    ) +
+                    "view: attached=${v?.isAttachedToWindow} shown=${v?.isShown} vis=${v?.visibility} " +
+                    "tx=%.1f ty=%.1f rotation=${processor.screenRotation}".format(v?.translationX ?: 0f, v?.translationY ?: 0f),
+            )
+            accelEvents = 0
+            rotationEvents = 0
+            handler.postDelayed(this, HEARTBEAT_MS)
+        }
+    }
 
     /**
      * While the dots are shown, both sensors report continuously (~50 Hz). Dots were seen frozen
@@ -87,6 +111,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             screenOn = intent.action == Intent.ACTION_SCREEN_ON
+            if (BuildConfig.DEBUG) DetectionLog(this@MotionCueService).add("Screen ${if (screenOn) "on" else "off"}")
             // With the screen off Play services may stop sending samples. Re-requesting brings a
             // fresh one within ~2 s, so the trip is judged on current information as soon as the
             // dots can be seen again.
@@ -201,11 +226,13 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         })
         screenOn = getSystemService(PowerManager::class.java).isInteractive
         updateSensors()
+        if (BuildConfig.DEBUG) handler.postDelayed(heartbeat, HEARTBEAT_MS)
         updateWatching()
         TileService.requestListeningState(this, android.content.ComponentName(this, CueTileService::class.java))
     }
 
     override fun onDestroy() {
+        handler.removeCallbacks(heartbeat)
         if (isRunning) {
             isRunning = false
             setSensors(false)
@@ -275,6 +302,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
     private fun setSensors(on: Boolean) {
         if (on == sensorsOn) return
         sensorsOn = on
+        if (BuildConfig.DEBUG) DetectionLog(this).add("Sensors ${if (on) "on" else "off"}")
         if (on) {
             registerSensors()
             handler.postDelayed(sensorWatchdog, SENSOR_WATCHDOG_MS)
@@ -302,8 +330,10 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             lastAccelMs = SystemClock.elapsedRealtime()
-            if (!hasRotation) return
+            accelEvents++
             val v = event.values
+            lastAccel[0] = v[0]; lastAccel[1] = v[1]; lastAccel[2] = v[2]
+            if (!hasRotation) return
             val invalidBefore = processor.invalidSamples
             val moved = processor.onSample(rotationMatrix, v[0], v[1], v[2], event.timestamp)
             if (processor.invalidSamples != invalidBefore && processor.invalidSamples <= MAX_LOGGED_INVALID) {
@@ -321,6 +351,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
             }
         } else {
             lastRotationMs = SystemClock.elapsedRealtime()
+            rotationEvents++
             SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
             hasRotation = true
         }
@@ -391,6 +422,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         private const val NOTIFICATION_ID = 1
         private const val SAMPLING_US = 20_000 // 50 Hz
         private const val SENSOR_WATCHDOG_MS = 2_000L
+        private const val HEARTBEAT_MS = 30_000L
         private const val SENSOR_SILENCE_MS = 2_000L
         private const val MAX_LOGGED_INVALID = 20
         private const val MAX_TOUCH_PASSTHROUGH_ALPHA = 0.8f

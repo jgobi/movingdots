@@ -44,8 +44,8 @@ class DetectionLog(context: Context) {
     companion object {
         const val TAG = "MotionCueAuto"
         private const val MAX_ENTRIES = 1000
-        /** About 1.5x the size of [MAX_ENTRIES] typical lines. */
-        private const val TRIM_BYTES = 150_000L
+        /** Well above [MAX_ENTRIES] lines, even the long heartbeat ones, so trimming stays rare. */
+        private const val TRIM_BYTES = 400_000L
 
         fun time(millis: Long): String = SimpleDateFormat("MM-dd HH:mm:ss", Locale.US).format(Date(millis))
     }

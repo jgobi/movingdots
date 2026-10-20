@@ -242,9 +242,8 @@ class MainActivity : Activity() {
                 else -> R.string.mode_on_desc
             },
         )
-        // The detection log is a testing aid: debug builds only.
-        findViewById<View>(R.id.detection_card).visibility =
-            if (BuildConfig.DEBUG && autoStopOn) View.VISIBLE else View.GONE
+        // The detection log is a testing aid: debug builds only (it also records sensor diagnostics).
+        findViewById<View>(R.id.detection_card).visibility = if (BuildConfig.DEBUG) View.VISIBLE else View.GONE
         refreshDetectionLog()
         status.setText(if (mode == CueModes.ON && running) R.string.state_showing else R.string.state_hidden)
     }
