@@ -6,6 +6,8 @@ the eyes see a still screen. Moving Dots draws small dots along the screen edges
 that move with the vehicle (accelerating pushes them down, braking up, turns sideways), so what you
 see matches what you feel.
 
+Website: https://jgobi.github.io/movingdots/
+
 Use it as a passenger, never while driving. Evidence for visual motion cues is still limited, so
 the app lets you rate rides with and without the dots and see whether they help you.
 
@@ -114,7 +116,8 @@ and fails if the `foss` build depends on Google or AndroidX libraries. Pushing a
 (`MOVINGDOTS_KEYSTORE_BASE64`, `MOVINGDOTS_KEYSTORE_PASSWORD`, `MOVINGDOTS_KEY_ALIAS`,
 `MOVINGDOTS_KEY_PASSWORD`) and creates a draft GitHub Release with the APKs.
 
-F-Droid descriptions are in `fastlane/metadata/android/`.
+F-Droid descriptions are in `fastlane/metadata/android/`. The website lives in `site/` and is
+published to GitHub Pages by `pages.yml` whenever it changes on `main`.
 
 To check by hand that the `foss` build pulls in nothing from Google (only `kotlin-stdlib` should be
 listed):

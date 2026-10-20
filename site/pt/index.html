@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moving Dots — pistas de movimento para Android</title>
+  <meta name="description" content="Pontos nas bordas da tela que se movem com o carro, para aliviar o enjoo ao ler ou assistir algo dentro de um veículo.">
+  <link rel="icon" href="../icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="./"><img src="../icon.svg" alt="">Moving Dots</a>
+  <a class="lang" href="../">English</a>
+</header>
+<main>
+  <div class="hero">
+    <div>
+      <h1>Leia no carro sem ficar enjoado</h1>
+      <p>O Moving Dots desenha pontinhos nas bordas da tela, por cima de qualquer app, que se movem com o veículo. Assim, o que você vê combina com o que você sente.</p>
+      <div class="buttons">
+        <a class="button" href="https://github.com/jgobi/movingdots/releases/latest">Baixar</a>
+        <span class="button secondary disabled">F-Droid (em breve)</span>
+        <a class="button secondary" href="https://github.com/jgobi/movingdots">Código-fonte</a>
+      </div>
+    </div>
+    <div class="phone" aria-hidden="true">
+      <div class="lines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="dots"><i style="left:10px;top:28px"></i><i style="left:136px;top:28px"></i><i style="left:10px;top:78px"></i><i style="left:136px;top:78px"></i><i style="left:10px;top:128px"></i><i style="left:136px;top:128px"></i><i style="left:10px;top:178px"></i><i style="left:136px;top:178px"></i><i style="left:10px;top:228px"></i><i style="left:136px;top:228px"></i><i style="left:10px;top:278px"></i><i style="left:136px;top:278px"></i></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Como funciona</h2>
+    <div class="cards">
+      <div class="card"><h3>O corpo sente a viagem</h3><p>O ouvido interno percebe cada aceleração, freada e curva, mas os olhos veem uma tela parada. Esse desencontro é o que causa o enjoo.</p></div>
+      <div class="card"><h3>Os pontos acompanham</h3><p>Acelerar empurra os pontos para baixo, frear para cima, e as curvas para os lados: na direção que o corpo sente.</p></div>
+      <div class="card"><h3>A tela continua livre</h3><p>Os pontos ficam nas bordas, e os toques passam para o app que você está usando.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Recursos</h2>
+    <ul>
+      <li>Bloco nas Configurações rápidas para ligar e desligar os pontos com um toque</li>
+      <li>Sensibilidade, tamanho, opacidade, quantidade e cor ajustáveis, com prévia ao vivo</li>
+      <li>Pontos só nas laterais, ou também em cima e embaixo</li>
+      <li>Avaliação opcional das viagens (escala de sintomas de 0 a 10), para ver se os pontos ajudam você</li>
+      <li>Notificação opcional</li>
+      <li>Pequeno: menos de 100 KB sem o Google Play services</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Duas versões</h2>
+    <table>
+      <tr><th>Versão</th><th>Desligar ao sair do veículo</th><th>Onde</th></tr>
+      <tr><td>Livre (<code>foss</code>)</td><td>Não</td><td>Releases do GitHub, F-Droid (em breve)</td></tr>
+      <tr><td>Com Google Play services (<code>full</code>)</td><td>Sim, com o reconhecimento de atividade enquanto os pontos estão ligados</td><td>Releases do GitHub</td></tr>
+    </table>
+    <p class="note">As duas precisam do Android 12 ou mais recente e podem ser instaladas lado a lado.</p>
+  </section>
+
+  <section>
+    <h2>Privado por padrão</h2>
+    <p>O app não tem permissão de internet: nada sai do seu celular. Os sensores de movimento só funcionam com os pontos e a tela ligados.</p>
+    <p class="note">Use como passageiro, nunca dirigindo. As evidências sobre pistas visuais de movimento ainda são limitadas, e elas ajudam algumas pessoas mais do que outras: a avaliação das viagens serve para você conferir se funcionam no seu caso.</p>
+  </section>
+</main>
+<footer>
+  Software livre sob a <a href="https://github.com/jgobi/movingdots/blob/main/LICENSE">GNU GPL v3 ou posterior</a>. · <a href="https://github.com/jgobi/movingdots">GitHub</a>
+</footer>
+</body>
+</html>

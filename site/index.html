@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moving Dots — vehicle motion cues for Android</title>
+  <meta name="description" content="Dots at the edges of the screen that move with the car, to ease motion sickness while reading or watching in a vehicle.">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="./"><img src="icon.svg" alt="">Moving Dots</a>
+  <a class="lang" href="pt/">Português</a>
+</header>
+<main>
+  <div class="hero">
+    <div>
+      <h1>Read in the car without feeling sick</h1>
+      <p>Moving Dots draws small dots along the edges of your screen, on top of any app, that move with the vehicle. What you see then matches what you feel.</p>
+      <div class="buttons">
+        <a class="button" href="https://github.com/jgobi/movingdots/releases/latest">Download</a>
+        <span class="button secondary disabled">F-Droid (coming soon)</span>
+        <a class="button secondary" href="https://github.com/jgobi/movingdots">Source code</a>
+      </div>
+    </div>
+    <div class="phone" aria-hidden="true">
+      <div class="lines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="dots"><i style="left:10px;top:28px"></i><i style="left:136px;top:28px"></i><i style="left:10px;top:78px"></i><i style="left:136px;top:78px"></i><i style="left:10px;top:128px"></i><i style="left:136px;top:128px"></i><i style="left:10px;top:178px"></i><i style="left:136px;top:178px"></i><i style="left:10px;top:228px"></i><i style="left:136px;top:228px"></i><i style="left:10px;top:278px"></i><i style="left:136px;top:278px"></i></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>How it works</h2>
+    <div class="cards">
+      <div class="card"><h3>Your body feels the ride</h3><p>Your inner ear senses every acceleration, brake and turn, but your eyes see a screen standing still. That mismatch is what makes you feel sick.</p></div>
+      <div class="card"><h3>The dots move with it</h3><p>Accelerating pushes the dots down, braking pushes them up, and turns push them sideways: the direction your body feels.</p></div>
+      <div class="card"><h3>The screen stays free</h3><p>The dots stay at the edges, and touches pass through to the app you're using.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Features</h2>
+    <ul>
+      <li>Quick Settings tile to turn the dots on and off with one tap</li>
+      <li>Adjustable sensitivity, dot size, opacity, count and color, with a live preview</li>
+      <li>Dots on the side edges only, or also at the top and bottom</li>
+      <li>Optional ride ratings (a 0–10 symptom scale) to see whether the dots help you</li>
+      <li>Optional notification</li>
+      <li>Tiny: under 100 KB without Google Play services</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Two versions</h2>
+    <table>
+      <tr><th>Version</th><th>Turn off when I leave the vehicle</th><th>Where</th></tr>
+      <tr><td>Free (<code>foss</code>)</td><td>No</td><td>GitHub Releases, F-Droid (coming soon)</td></tr>
+      <tr><td>With Google Play services (<code>full</code>)</td><td>Yes, using activity recognition while the dots are on</td><td>GitHub Releases</td></tr>
+    </table>
+    <p class="note">Both need Android 12 or later and can be installed side by side.</p>
+  </section>
+
+  <section>
+    <h2>Private by design</h2>
+    <p>The app has no internet permission: nothing ever leaves your phone. Motion sensors only run while the dots are on and the screen is on.</p>
+    <p class="note">Use it as a passenger, never while driving. Evidence for visual motion cues is still limited, and they help some people more than others: the ride ratings are there to check whether they work for you.</p>
+  </section>
+</main>
+<footer>
+  Free software under the <a href="https://github.com/jgobi/movingdots/blob/main/LICENSE">GNU GPL v3 or later</a>. · <a href="https://github.com/jgobi/movingdots">GitHub</a>
+</footer>
+</body>
+</html>
