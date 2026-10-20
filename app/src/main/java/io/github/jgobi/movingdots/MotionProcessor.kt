@@ -73,6 +73,12 @@ class MotionProcessor(
      * @return true when the offset moved enough since the last true return to be worth redrawing.
      */
     fun onSample(r: FloatArray, ax: Float, ay: Float, az: Float, timestampNs: Long): Boolean {
+        // A single NaN/infinite reading would poison the spring state for good: once dx is NaN, no
+        // later offset ever differs "enough" from it, so the dots would freeze until a reset.
+        if (!ax.isFinite() || !ay.isFinite() || !az.isFinite() || r.any { !it.isFinite() }) {
+            invalidSamples++
+            return false
+        }
         // World-frame horizontal acceleration.
         val awx = r[0] * ax + r[1] * ay + r[2] * az
         val awy = r[3] * ax + r[4] * ay + r[5] * az
@@ -141,6 +147,12 @@ class MotionProcessor(
         vy += (w2 * (targetY - dy) - c * vy) * dt
         dx += vx * dt
         dy += vy * dt
+        if (!dx.isFinite() || !dy.isFinite() || !vx.isFinite() || !vy.isFinite()) {
+            // Defensive: never keep an invalid state. Rest at the centre and start over.
+            invalidSamples++
+            reset()
+            return true
+        }
         if (abs(dx) > maxOffsetXPx) { dx = maxOffsetXPx * (if (dx > 0) 1 else -1); vx = 0f }
         if (abs(dy) > maxOffsetYPx) { dy = maxOffsetYPx * (if (dy > 0) 1 else -1); vy = 0f }
 
@@ -157,6 +169,10 @@ class MotionProcessor(
         }
         return false
     }
+
+    /** Readings or states rejected as NaN/infinite since creation (diagnostics). */
+    var invalidSamples = 0
+        private set
 
     val isAtRest: Boolean
         get() = dx == 0f && dy == 0f && vx == 0f && vy == 0f

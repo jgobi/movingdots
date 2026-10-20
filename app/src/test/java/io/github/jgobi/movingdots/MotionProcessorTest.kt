@@ -172,6 +172,23 @@ class MotionProcessorTest {
     }
 
     @Test
+    fun invalidReadingsAreIgnoredAndDoNotFreezeTheDots() {
+        val p = processor()
+        val r = rotation(45.0)
+        var ts = run(p, r, 1.0) { 0f to 2f }
+        // A NaN accelerometer reading and a NaN rotation matrix are both rejected.
+        p.onSample(r, Float.NaN, 0f, 0f, ts); ts += dtNs
+        val badR = r.copyOf().also { it[4] = Float.NaN }
+        p.onSample(badR, 0f, 1f, 0f, ts); ts += dtNs
+        assertEquals(2, p.invalidSamples)
+        assertTrue(p.dx.isFinite() && p.dy.isFinite())
+        // The dots keep responding afterwards.
+        val before = p.dy
+        run(p, r, 2.0, startNs = ts) { 0f to -3f }
+        assertTrue("dy=${p.dy} before=$before", p.dy < before - 1f)
+    }
+
+    @Test
     fun offsetIsClamped() {
         val p = MotionProcessor(gainPxPerMs2 = gain, maxOffsetXPx = 5f, maxOffsetYPx = 10f)
         run(p, rotation(45.0), 3.0) { 9f to 9f }

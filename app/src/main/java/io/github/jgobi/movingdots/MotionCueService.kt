@@ -52,6 +52,30 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
     private var rotationSensor: Sensor? = null
     private val rotationMatrix = FloatArray(9)
     private var hasRotation = false
+    private var lastAccelMs = 0L
+    private var lastRotationMs = 0L
+
+    /**
+     * While the dots are shown, both sensors report continuously (~50 Hz). Dots were seen frozen
+     * on a ride until turned off and on again: if either sensor goes quiet, register them again.
+     * (The CPU is awake whenever this runs, since sensors only run with the screen on.)
+     */
+    private val sensorWatchdog = object : Runnable {
+        override fun run() {
+            if (!sensorsOn) return
+            val now = SystemClock.elapsedRealtime()
+            val quietAccel = now - lastAccelMs
+            val quietRotation = now - lastRotationMs
+            if (quietAccel >= SENSOR_SILENCE_MS || quietRotation >= SENSOR_SILENCE_MS) {
+                DetectionLog(this@MotionCueService).add(
+                    "Sensor events stopped (accelerometer ${quietAccel / 1000}s, rotation ${quietRotation / 1000}s " +
+                        "without events) -> registering the sensors again",
+                )
+                registerSensors()
+            }
+            handler.postDelayed(this, SENSOR_WATCHDOG_MS)
+        }
+    }
     private var sensorsOn = false
     private var screenOn = true
 
@@ -252,11 +276,10 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         if (on == sensorsOn) return
         sensorsOn = on
         if (on) {
-            processor.reset()
-            hasRotation = false
-            sensorManager.registerListener(this, rotationSensor, SAMPLING_US, handler)
-            sensorManager.registerListener(this, accelSensor, SAMPLING_US, handler)
+            registerSensors()
+            handler.postDelayed(sensorWatchdog, SENSOR_WATCHDOG_MS)
         } else {
+            handler.removeCallbacks(sensorWatchdog)
             sensorManager.unregisterListener(this)
             processor.reset()
             overlay?.translationX = 0f
@@ -264,11 +287,29 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         }
     }
 
+    /** (Re)registers both sensors from a clean state; also used by [sensorWatchdog]. */
+    private fun registerSensors() {
+        sensorManager.unregisterListener(this)
+        processor.reset()
+        hasRotation = false
+        // Count registration as fresh, so the watchdog gives the sensors time to start.
+        lastAccelMs = SystemClock.elapsedRealtime()
+        lastRotationMs = lastAccelMs
+        sensorManager.registerListener(this, rotationSensor, SAMPLING_US, handler)
+        sensorManager.registerListener(this, accelSensor, SAMPLING_US, handler)
+    }
+
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            lastAccelMs = SystemClock.elapsedRealtime()
             if (!hasRotation) return
             val v = event.values
-            if (processor.onSample(rotationMatrix, v[0], v[1], v[2], event.timestamp)) {
+            val invalidBefore = processor.invalidSamples
+            val moved = processor.onSample(rotationMatrix, v[0], v[1], v[2], event.timestamp)
+            if (processor.invalidSamples != invalidBefore && processor.invalidSamples <= MAX_LOGGED_INVALID) {
+                DetectionLog(this).add("Invalid sensor value ignored (NaN/infinite), #${processor.invalidSamples}")
+            }
+            if (moved) {
                 overlay?.let {
                     it.translationX = processor.dx
                     it.translationY = processor.dy
@@ -279,6 +320,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
                 }
             }
         } else {
+            lastRotationMs = SystemClock.elapsedRealtime()
             SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
             hasRotation = true
         }
@@ -348,6 +390,9 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         const val CHANNEL_ID = "cues"
         private const val NOTIFICATION_ID = 1
         private const val SAMPLING_US = 20_000 // 50 Hz
+        private const val SENSOR_WATCHDOG_MS = 2_000L
+        private const val SENSOR_SILENCE_MS = 2_000L
+        private const val MAX_LOGGED_INVALID = 20
         private const val MAX_TOUCH_PASSTHROUGH_ALPHA = 0.8f
 
         @Volatile
