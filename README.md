@@ -84,7 +84,8 @@ Common code only talks to `AutoDetection`, which exists once per flavor with the
   spring. That keeps the 0.1–0.5 Hz band where car sickness peaks and rejects hand jitter. When
   the sensors start (each time the screen turns on), τ grows from 0.5 s to 10 s over 10 s: a
   rotation vector started in a moving vehicle mistakes its acceleration for tilt, and the short τ
-  quickly absorbs the resulting offset.
+  quickly absorbs the resulting offset. The filter starts from zero rather than from the first
+  reading, which usually includes the hand unlocking the phone.
 - `DotsOverlayView` draws the dots once; motion is applied with `translationX/Y` only.
 - `MotionCueService` is a foreground service; sensors run only while the screen is on.
 - The dots are always turned on by hand (app or Quick Settings tile). With "turn off when I leave

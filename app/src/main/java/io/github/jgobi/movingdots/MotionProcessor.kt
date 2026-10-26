@@ -16,7 +16,10 @@ import kotlin.math.sqrt
  *  3. High-pass (tau ~10 s) to remove sensor bias and gravity leakage from tilt errors. Right after
  *     a reset tau starts short and grows to its full value over [highPassWarmupS]: the rotation
  *     vector restarts with the sensors, and when that happens in a moving vehicle its first tilt
- *     estimate includes the vehicle's acceleration, which then leaks in as a false offset.
+ *     estimate includes the vehicle's acceleration, which then leaks in as a false offset. The
+ *     filter also starts from zero rather than from the first reading: that reading usually
+ *     includes the hand unlocking the phone, and taken as the baseline it would show up as an
+ *     opposite offset once the hand stops.
  *  4. Soft dead zone so the dots rest perfectly still while cruising.
  *  5. Drive a damped spring (~1 Hz, zeta 0.9) with the inertial pseudo-force. This is a 2nd-order
  *     low-pass that keeps the 0.1-0.5 Hz band where car sickness peaks and rejects hand jitter,
@@ -126,7 +129,6 @@ class MotionProcessor(
 
         if (lastTimestampNs == 0L) {
             lastTimestampNs = timestampNs
-            hpInF = inF; hpInL = inL
             return false
         }
         val dt = ((timestampNs - lastTimestampNs) * 1e-9f).coerceIn(0f, 0.05f)

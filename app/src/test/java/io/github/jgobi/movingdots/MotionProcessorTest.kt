@@ -179,6 +179,21 @@ class MotionProcessorTest {
     }
 
     @Test
+    fun handMovingWhenSensorsStartLeavesNoOffset() {
+        val p = processor()
+        val r = rotation(45.0)
+        var ts = 1L
+        // The hand moves the phone at 2 m/s^2 for 0.3 s as the sensors start, then holds it still.
+        for (i in 0 until (4e9 / dtNs).toInt()) {
+            val north = if (i * dtNs < 300_000_000L) 2f else 0f
+            val d = toDevice(r, 0f, north, 0f)
+            p.onSample(r, d[0], d[1], d[2], ts)
+            ts += dtNs
+        }
+        assertEquals(0f, p.dy, 1f)
+    }
+
+    @Test
     fun rotatingPhoneWithoutAccelerationDoesNotMoveDots() {
         val p = processor()
         var ts = 1L
