@@ -44,6 +44,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
     private lateinit var prefs: Prefs
     private lateinit var sensorManager: SensorManager
     private lateinit var displayManager: DisplayManager
+    private lateinit var powerManager: PowerManager
     private var windowManager: WindowManager? = null
     private var overlay: DotsOverlayView? = null
     private lateinit var processor: MotionProcessor
@@ -64,7 +65,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         override fun run() {
             val v = overlay
             DetectionLog(this@MotionCueService).add(
-                "Heartbeat: screenOn=$screenOn interactive=${getSystemService(PowerManager::class.java).isInteractive} " +
+                "Heartbeat: screenOn=$screenOn interactive=${powerManager.isInteractive} " +
                     "sensorsOn=$sensorsOn accel=$accelEvents rot=$rotationEvents hasRot=$hasRotation " +
                     "a=%.2f,%.2f,%.2f fwd=%.2f lat=%.2f dx=%.1f dy=%.1f ".format(
                         lastAccel[0], lastAccel[1], lastAccel[2],
@@ -110,17 +111,40 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            screenOn = intent.action == Intent.ACTION_SCREEN_ON
-            if (BuildConfig.DEBUG) DetectionLog(this@MotionCueService).add("Screen ${if (screenOn) "on" else "off"}")
-            // With the screen off Play services may stop sending samples. Re-requesting brings a
-            // fresh one within ~2 s, so the trip is judged on current information as soon as the
-            // dots can be seen again.
-            if (screenOn && detector != null) {
-                DetectionLog(this@MotionCueService).add("Screen on: asking for a fresh sample")
-                AutoDetection.startWatching(this@MotionCueService)
-            }
-            updateSensors()
+            checkScreen(intent.action.orEmpty().substringAfterLast('.'))
         }
+    }
+
+    /** Runs while the screen is believed off; see [checkScreen]. */
+    private val screenPoll = object : Runnable {
+        override fun run() {
+            checkScreen("poll")
+            if (!screenOn) handler.postDelayed(this, SCREEN_POLL_MS)
+        }
+    }
+
+    /**
+     * Follows the real screen state. ACTION_SCREEN_ON alone isn't enough: after the screen had been
+     * off for 17 min, unlocking with the fingerprint (XOS) woke the phone without it, leaving the
+     * sensors off and the dots frozen in the centre. So every hint re-reads PowerManager: the screen
+     * broadcasts, ACTION_USER_PRESENT, display changes, and a poll while the screen is believed off
+     * (the handler doesn't wake the CPU, so the poll only runs while the phone is awake anyway).
+     */
+    private fun checkScreen(source: String) {
+        val on = powerManager.isInteractive
+        if (on == screenOn) return
+        screenOn = on
+        if (BuildConfig.DEBUG) DetectionLog(this).add("Screen ${if (on) "on" else "off"} ($source)")
+        handler.removeCallbacks(screenPoll)
+        if (!on) handler.postDelayed(screenPoll, SCREEN_POLL_MS)
+        // With the screen off Play services may stop sending samples. Re-requesting brings a fresh
+        // one within ~2 s, so the trip is judged on current information as soon as the dots can be
+        // seen again.
+        if (on && detector != null) {
+            DetectionLog(this).add("Screen on: asking for a fresh sample")
+            AutoDetection.startWatching(this)
+        }
+        updateSensors()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -130,6 +154,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         prefs = Prefs(this)
         sensorManager = getSystemService(SensorManager::class.java)
         displayManager = getSystemService(DisplayManager::class.java)
+        powerManager = getSystemService(PowerManager::class.java)
         accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         // Game rotation vector avoids the magnetometer, which a car's metal and motors distort.
         rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
@@ -223,8 +248,10 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         registerReceiver(screenReceiver, IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_USER_PRESENT)
         })
-        screenOn = getSystemService(PowerManager::class.java).isInteractive
+        screenOn = powerManager.isInteractive
+        if (!screenOn) handler.postDelayed(screenPoll, SCREEN_POLL_MS)
         updateSensors()
         if (BuildConfig.DEBUG) handler.postDelayed(heartbeat, HEARTBEAT_MS)
         updateWatching()
@@ -234,6 +261,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
 
     override fun onDestroy() {
         handler.removeCallbacks(heartbeat)
+        handler.removeCallbacks(screenPoll)
         if (isRunning) {
             isRunning = false
             setSensors(false)
@@ -379,6 +407,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
     override fun onDisplayChanged(displayId: Int) {
         if (displayId == Display.DEFAULT_DISPLAY) {
             processor.screenRotation = displayManager.getDisplay(displayId).rotation
+            checkScreen("display")
         }
     }
 
@@ -426,6 +455,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         private const val SENSOR_WATCHDOG_MS = 2_000L
         private const val HEARTBEAT_MS = 30_000L
         private const val SENSOR_SILENCE_MS = 2_000L
+        private const val SCREEN_POLL_MS = 2_000L
         private const val MAX_LOGGED_INVALID = 20
         private const val MAX_TOUCH_PASSTHROUGH_ALPHA = 0.8f
 
