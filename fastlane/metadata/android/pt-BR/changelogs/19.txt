@@ -1,0 +1,3 @@
+- Corrigido: os pontos podiam congelar no centro após desbloquear o celular com a digital
+- Corrigido: os pontos podiam ficar fora do centro por um tempo após desbloquear o celular com o veículo em movimento
+- Arrastar o app nos apps recentes não para mais os pontos em sistemas que encerram o app (ex.: Infinix XOS): enquanto os pontos estão ligados, o app fica fora dos recentes

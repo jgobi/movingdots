@@ -1,0 +1,3 @@
+- Fixed: the dots could freeze in the centre after unlocking the phone with the fingerprint
+- Fixed: the dots could stay off-centre for a while after unlocking the phone in a moving vehicle
+- Swiping the app away in recent apps no longer stops the dots on systems that kill the app (e.g. Infinix XOS): while the dots are on, the app is left out of recent apps
