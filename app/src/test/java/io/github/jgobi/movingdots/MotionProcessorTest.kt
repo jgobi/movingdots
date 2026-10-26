@@ -14,6 +14,11 @@ class MotionProcessorTest {
     private val gain = 6f
     private val dtNs = 20_000_000L // 50 Hz
 
+    private companion object {
+        /** Longer than the processor's high-pass warm-up. */
+        const val WARMUP_S = 10.5
+    }
+
     /** Device->world rotation: pitch the phone up from flat by [tiltDeg], then yaw by [yawDeg]. */
     private fun rotation(tiltDeg: Double, yawDeg: Double = 0.0): FloatArray {
         val t = tiltDeg * PI / 180
@@ -36,8 +41,9 @@ class MotionProcessorTest {
 
     /**
      * Feeds [seconds] of world acceleration; [accel] gives (east, north) at time t. When starting
-     * fresh, 0.5 s of zero acceleration comes first (a trip starts at rest; a constant present from
-     * the very first sample is indistinguishable from sensor bias).
+     * fresh, [WARMUP_S] of zero acceleration comes first: a constant present from the very first
+     * sample is indistinguishable from sensor bias, and the high-pass warm-up has to finish before
+     * the steady-state response can be measured.
      */
     private fun run(
         p: MotionProcessor, r: FloatArray, seconds: Double, startNs: Long = 0L,
@@ -46,7 +52,7 @@ class MotionProcessorTest {
         var ts = startNs
         if (startNs == 0L) {
             ts = 1L
-            repeat(25) { p.onSample(r, 0f, 0f, 0f, ts); ts += dtNs }
+            repeat((WARMUP_S * 1e9 / dtNs).toInt()) { p.onSample(r, 0f, 0f, 0f, ts); ts += dtNs }
         }
         val n = (seconds * 1e9 / dtNs).toInt()
         for (i in 0 until n) {
@@ -150,6 +156,26 @@ class MotionProcessorTest {
         // A 0.3 m/s^2 bias that appears after the processor has initialised (e.g. a slight tilt error).
         run(p, rotation(45.0), 40.0) { 0f to 0.3f }
         assertTrue("dy=${p.dy}", p.isAtRest)
+    }
+
+    /** Offset left after a tilt error from the sensors' restart shows up 2 s after the reset. */
+    private fun leakAfterReset(p: MotionProcessor): Float {
+        val r = rotation(45.0)
+        var ts = 1L
+        for (i in 0 until (10e9 / dtNs).toInt()) {
+            val north = if (i * dtNs >= 2e9) 1.5f else 0f
+            val d = toDevice(r, 0f, north, 0f)
+            p.onSample(r, d[0], d[1], d[2], ts)
+            ts += dtNs
+        }
+        return abs(p.dy)
+    }
+
+    @Test
+    fun earlyTiltErrorFadesFasterThanWithoutWarmUp() {
+        val warm = leakAfterReset(processor())
+        val plain = leakAfterReset(MotionProcessor(gain, 1000f, 1000f, highPassStartTauS = 10f))
+        assertTrue("warm=$warm plain=$plain", warm < 0.5f * plain)
     }
 
     @Test

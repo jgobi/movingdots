@@ -13,7 +13,10 @@ import kotlin.math.sqrt
  *     sensor (an extra fused virtual sensor) is needed.
  *  2. Project it onto the passenger's "forward" and "right" directions, derived from the screen
  *     orientation so the result is the same whether the phone is held flat or upright.
- *  3. High-pass (tau ~10 s) to remove sensor bias and gravity leakage from tilt errors.
+ *  3. High-pass (tau ~10 s) to remove sensor bias and gravity leakage from tilt errors. Right after
+ *     a reset tau starts short and grows to its full value over [highPassWarmupS]: the rotation
+ *     vector restarts with the sensors, and when that happens in a moving vehicle its first tilt
+ *     estimate includes the vehicle's acceleration, which then leaks in as a false offset.
  *  4. Soft dead zone so the dots rest perfectly still while cruising.
  *  5. Drive a damped spring (~1 Hz, zeta 0.9) with the inertial pseudo-force. This is a 2nd-order
  *     low-pass that keeps the 0.1-0.5 Hz band where car sickness peaks and rejects hand jitter,
@@ -33,6 +36,8 @@ class MotionProcessor(
     springHz: Float = 1.0f,
     private val damping: Float = 0.9f,
     private val highPassTauS: Float = 10f,
+    private val highPassStartTauS: Float = 0.5f,
+    private val highPassWarmupS: Float = 10f,
     private val deadZoneMs2: Float = 0.1f,
 ) {
     /** Display rotation, as Surface.ROTATION_0..ROTATION_270 (0..3). */
@@ -44,6 +49,13 @@ class MotionProcessor(
     /** Latest horizontal acceleration after filtering, in m/s^2 (for debugging/tuning). */
     var accelForward = 0f; private set
     var accelLateral = 0f; private set
+
+    /** Latest horizontal acceleration before filtering, in m/s^2 (for debugging/tuning). */
+    var rawForward = 0f; private set
+    var rawLateral = 0f; private set
+
+    /** Seconds of samples since the last reset, for the high-pass warm-up. */
+    private var sinceResetS = 0f
 
     private val omega = (2.0 * Math.PI * springHz).toFloat()
     private var vx = 0f
@@ -63,6 +75,8 @@ class MotionProcessor(
         dx = 0f; dy = 0f; vx = 0f; vy = 0f
         hpInF = 0f; hpInL = 0f; hpOutF = 0f; hpOutL = 0f
         accelForward = 0f; accelLateral = 0f
+        rawForward = 0f; rawLateral = 0f
+        sinceResetS = 0f
         lastTimestampNs = 0L
         lastDrawnX = 0f; lastDrawnY = 0f
     }
@@ -107,6 +121,8 @@ class MotionProcessor(
 
         val inF = awx * fx + awy * fy
         val inL = awx * rx + awy * ry
+        rawForward = inF
+        rawLateral = inL
 
         if (lastTimestampNs == 0L) {
             lastTimestampNs = timestampNs
@@ -118,7 +134,10 @@ class MotionProcessor(
         if (dt <= 0f) return false
 
         // First-order high-pass.
-        val a = exp(-dt / highPassTauS)
+        sinceResetS += dt
+        val tau = if (sinceResetS >= highPassWarmupS) highPassTauS
+        else highPassStartTauS + (highPassTauS - highPassStartTauS) * sinceResetS / highPassWarmupS
+        val a = exp(-dt / tau)
         hpOutF = a * (hpOutF + inF - hpInF)
         hpOutL = a * (hpOutL + inL - hpInL)
         hpInF = inF; hpInL = inL

@@ -59,6 +59,9 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
     private var accelEvents = 0
     private var rotationEvents = 0
     private val lastAccel = FloatArray(3)
+    /** Debug builds: the filter is logged every second for a while after the sensors start. */
+    private var sensorsStartMs = 0L
+    private var nextWarmupLogMs = 0L
 
     /** Debug builds only: the service's view of sensors, screen and overlay every 30 s. */
     private val heartbeat = object : Runnable {
@@ -353,6 +356,8 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         // Count registration as fresh, so the watchdog gives the sensors time to start.
         lastAccelMs = SystemClock.elapsedRealtime()
         lastRotationMs = lastAccelMs
+        sensorsStartMs = lastAccelMs
+        nextWarmupLogMs = lastAccelMs
         sensorManager.registerListener(this, rotationSensor, SAMPLING_US, handler)
         sensorManager.registerListener(this, accelSensor, SAMPLING_US, handler)
     }
@@ -368,6 +373,15 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
             val moved = processor.onSample(rotationMatrix, v[0], v[1], v[2], event.timestamp)
             if (processor.invalidSamples != invalidBefore && processor.invalidSamples <= MAX_LOGGED_INVALID) {
                 DetectionLog(this).add("Invalid sensor value ignored (NaN/infinite), #${processor.invalidSamples}")
+            }
+            if (BuildConfig.DEBUG && lastAccelMs >= nextWarmupLogMs && lastAccelMs - sensorsStartMs < WARMUP_LOG_MS) {
+                nextWarmupLogMs += 1_000L
+                DetectionLog(this).add(
+                    "Sensors +%.1fs: raw fwd=%.2f lat=%.2f, filtered fwd=%.2f lat=%.2f, dx=%.1f dy=%.1f".format(
+                        (lastAccelMs - sensorsStartMs) / 1000f, processor.rawForward, processor.rawLateral,
+                        processor.accelForward, processor.accelLateral, processor.dx, processor.dy,
+                    ),
+                )
             }
             if (moved) {
                 overlay?.let {
@@ -456,6 +470,7 @@ class MotionCueService : Service(), SensorEventListener, SharedPreferences.OnSha
         private const val HEARTBEAT_MS = 30_000L
         private const val SENSOR_SILENCE_MS = 2_000L
         private const val SCREEN_POLL_MS = 2_000L
+        private const val WARMUP_LOG_MS = 15_000L
         private const val MAX_LOGGED_INVALID = 20
         private const val MAX_TOUCH_PASSTHROUGH_ALPHA = 0.8f
 
