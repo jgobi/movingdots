@@ -10,12 +10,12 @@ class Prefs(context: Context) {
 
     /** Steady-state dot displacement in dp per m/s^2 of vehicle acceleration. */
     var gainDp: Int
-        get() = sp.getInt(K_GAIN, 6)
+        get() = sp.getInt(K_GAIN, 10)
         set(v) = sp.edit().putInt(K_GAIN, v).apply()
 
     /** Dot radius in dp. */
     var dotSizeDp: Int
-        get() = sp.getInt(K_SIZE, 4)
+        get() = sp.getInt(K_SIZE, 7)
         set(v) = sp.edit().putInt(K_SIZE, v).apply()
 
     /** Dot opacity, 0-100. The overlay window itself is capped at 0.8 so touches pass through. */
