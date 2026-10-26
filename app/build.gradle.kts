@@ -26,8 +26,8 @@ android {
         applicationId = "io.github.jgobi.movingdots"
         minSdk = 31
         targetSdk = 35
-        versionCode = 17
-        versionName = "0.7.7"
+        versionCode = 18
+        versionName = "0.7.8"
         resourceConfigurations += listOf("en", "pt")
     }
 

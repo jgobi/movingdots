@@ -30,7 +30,9 @@ import android.widget.TextView
 import android.widget.Toast
 import java.io.File
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.min
 import kotlin.math.sin
@@ -277,15 +279,21 @@ class MainActivity : Activity() {
         parent.addView(bar, ViewGroup.LayoutParams.MATCH_PARENT, dp(40))
     }
 
-    /** Diagnostics for automatic mode: detection log (copyable) and, in debug builds, the test trigger. */
-    /** Diagnostics for "turn off when I leave the vehicle": detection log, copyable. */
+    /** Diagnostics for "turn off when I leave the vehicle": detection log, exportable and copyable. */
     private fun setupDetection() {
+        findViewById<Button>(R.id.detection_export).setOnClickListener {
+            val name = "movingdots-log-${SimpleDateFormat("yyyyMMdd-HHmm", Locale.US).format(Date())}.txt"
+            startActivityForResult(
+                Intent(Intent.ACTION_CREATE_DOCUMENT)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .setType("text/plain")
+                    .putExtra(Intent.EXTRA_TITLE, name),
+                REQ_EXPORT_LOG,
+            )
+        }
         findViewById<Button>(R.id.detection_copy).setOnClickListener {
-            val header = "Moving Dots ${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_TYPE}) · " +
-                "${Build.MANUFACTURER} ${Build.MODEL} · Android ${Build.VERSION.RELEASE}\n" +
-                "dots=${if (MotionCueService.isRunning) "on" else "off"} armed=${MotionCueService.isArmed}\n"
             // Only the latest lines: long pastes were cut off at the end, losing the newest entries.
-            val text = header + detectionLog.lines().take(COPY_LINES).reversed().joinToString("\n")
+            val text = logHeader() + detectionLog.lines().take(COPY_LINES).reversed().joinToString("\n")
             getSystemService(ClipboardManager::class.java)
                 .setPrimaryClip(ClipData.newPlainText(getString(R.string.detection_title), text))
             // Android 13+ confirms clipboard writes itself.
@@ -295,6 +303,25 @@ class MainActivity : Activity() {
             detectionLog.clear()
             refreshDetectionLog()
         }
+    }
+
+    private fun logHeader() =
+        "Moving Dots ${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_TYPE}) · " +
+            "${Build.MANUFACTURER} ${Build.MODEL} · Android ${Build.VERSION.RELEASE}\n" +
+            "dots=${if (MotionCueService.isRunning) "on" else "off"} armed=${MotionCueService.isArmed}\n"
+
+    /** Writes the whole detection log, oldest first, to the file the user picked. */
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val uri = data?.data
+        if (requestCode != REQ_EXPORT_LOG || resultCode != RESULT_OK || uri == null) return
+        val ok = runCatching {
+            contentResolver.openOutputStream(uri)!!.bufferedWriter().use {
+                it.write(logHeader() + detectionLog.lines().reversed().joinToString("\n", postfix = "\n"))
+            }
+        }.isSuccess
+        Toast.makeText(this, if (ok) R.string.detection_exported else R.string.detection_export_failed, Toast.LENGTH_SHORT).show()
     }
 
     private fun refreshDetectionLog() {
@@ -414,6 +441,7 @@ class MainActivity : Activity() {
     companion object {
         private const val REQ_NOTIFICATIONS = 1
         private const val REQ_AUTO_STOP = 2
+        private const val REQ_EXPORT_LOG = 3
         private const val COPY_LINES = 200
         /** Peak acceleration of the preview demo, in m/s^2 (gentle city driving). */
         private const val DEMO_ACCEL = 2.5f

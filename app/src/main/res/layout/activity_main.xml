@@ -132,6 +132,11 @@
                 android:orientation="horizontal">
 
                 <Button
+                    android:id="@+id/detection_export"
+                    style="@style/TextButton"
+                    android:text="@string/detection_export" />
+
+                <Button
                     android:id="@+id/detection_copy"
                     style="@style/TextButton"
                     android:text="@string/detection_copy" />

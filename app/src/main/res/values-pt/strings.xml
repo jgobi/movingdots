@@ -59,6 +59,9 @@
     <string name="detection_title">Log de detecção de veículo</string>
     <string name="detection_empty">Nenhum evento de detecção ainda.</string>
     <string name="detection_copy">Copiar log</string>
+    <string name="detection_export">Exportar log</string>
+    <string name="detection_exported">Log exportado</string>
+    <string name="detection_export_failed">Não foi possível exportar o log</string>
     <string name="detection_clear">Limpar log</string>
     <string name="detection_copied">Log copiado</string>
     <string name="auto_stop">Desligar ao sair do veículo</string>
