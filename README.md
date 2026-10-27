@@ -8,6 +8,8 @@ see matches what you feel.
 
 Website: https://jgobi.github.io/movingdots/
 
+<img src="docs/screenshot-full.jpg" alt="Moving Dots with the dots on and &quot;Turn off when I leave the vehicle&quot; enabled" width="300">
+
 Use it as a passenger, never while driving. Evidence for visual motion cues is still limited, so
 the app lets you rate rides with and without the dots and see whether they help you.
 
