@@ -1,1 +1,2 @@
 - Sensibilidade padrão maior e pontos padrão maiores
+- O idioma do app agora pode ser escolhido nas configurações do sistema (Android 13+)

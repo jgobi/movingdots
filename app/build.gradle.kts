@@ -66,6 +66,11 @@ android {
         }
     }
 
+    // Lists the app's languages for the system's per-app language setting (Android 13+).
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     buildFeatures {
         buildConfig = true
     }

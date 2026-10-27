@@ -1,1 +1,2 @@
 - Higher default sensitivity and larger default dots
+- The app can now have its own language in the system settings (Android 13+)
